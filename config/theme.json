@@ -1,0 +1,37 @@
+{
+  "config": {
+    "archivesPageSize": 50,
+    "dateFormat": "YYYY-MM-DD",
+    "feedCount": 10,
+    "feedFullText": true,
+    "footerInfo": "Powered by <a href=\"https://github.com/bofengsun\" target=\"_blank\">BOFENGSUN</a>",
+    "postPageSize": 10,
+    "postUrlFormat": "SLUG",
+    "showFeatureImage": true,
+    "siteDescription": "重新开始，从心开始！",
+    "siteName": "玩命有人疼",
+    "tagUrlFormat": "SHORT_ID",
+    "themeName": "jia"
+  },
+  "customConfig": {
+    "douban": "",
+    "facebook": "",
+    "fy": "",
+    "ga": "UA-151730353-1",
+    "github": "https://github.com/bofengsun",
+    "id": "",
+    "indeximg": "/images/head.png",
+    "instagram": "",
+    "key": "",
+    "linkedin": "",
+    "postimg": "/images/head.png",
+    "qq": "",
+    "rss": "",
+    "telegram": "",
+    "twitter": "",
+    "valine": true,
+    "weibo": "",
+    "youtube": "",
+    "zhihu": "https://www.zhihu.com/people/wan-ming-you-ren-teng/activities"
+  }
+}

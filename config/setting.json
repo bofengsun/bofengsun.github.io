@@ -1,0 +1,26 @@
+{
+  "config": {
+    "branch": "master",
+    "domain": "https://bofengsun.github.io/",
+    "email": "bofengsun@163.com",
+    "platform": "github",
+    "repository": "bofengsun.github.io",
+    "token": "b0bc8b0cbe64ca8aa08a5948805d8bf9b2ac36e1",
+    "username": "bofengsun"
+  },
+  "comment": {
+    "commentPlatform": "gitalk",
+    "disqusSetting": {
+      "api": "",
+      "apikey": "",
+      "shortname": ""
+    },
+    "gitalkSetting": {
+      "clientId": "225619cd1fd2fb548ab9",
+      "clientSecret": "761b00969ec5fbf4d3906d1872e6b45bd2079e53",
+      "owner": "bofengsun",
+      "repository": "bofengsun.github.io"
+    },
+    "showComment": true
+  }
+}
