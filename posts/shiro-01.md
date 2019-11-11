@@ -1,10 +1,10 @@
 ---
 title: 'Shiro 初体验'
-date: 2019-11-07 17:39:44
+date: 2019-11-08 17:39:44
 tags: [Shiro]
 published: true
 hideInList: false
-feature: /post-images/xie-hou-shiro.png
+feature: /post-images/shiro-01.png
 ---
 Shiro 是一个Java安全框架，主要是进行身份认证，权限认证，密码加密，会话管理的一套框架，下面让我们一起来认识一下Shiro吧!
 <!-- more -->
