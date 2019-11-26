@@ -1,11 +1,12 @@
 ---
 title: 'Shiro 密码加密与会话管理介绍'
 date: 2019-11-14 23:54:05
-tags: []
+tags: [Shiro]
 published: true
 hideInList: false
 feature: /post-images/shiro-mi-ma-jia-mi.png
 ---
+
 密码加密主要是在用户登录与注册的时候进行的，用户在注册时生成密码，通过加密存储密文到数据库中，用户在登录时候，将前台用户填写的密码再次进行加密与数据库中的密码进行比对，一致即可通过；会话管理主要时类似Session、Token的生命周期，下面我们来简单认识一下Shiro的密码加密和会话管理。
 <!-- more -->
 # Shiro 密码加密
