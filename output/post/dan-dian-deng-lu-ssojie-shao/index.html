@@ -1,0 +1,215 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>单点登陆（SSO）介绍 | 玩命有人疼</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://bofengsun.github.io//styles/main.css">
+          <script src="https://bofengsun.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://bofengsun.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-151730353-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'UA-151730353-1');
+</script>
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3"  style="background-image: url(https://bofengsun.github.io//post-images/dan-dian-deng-lu-ssojie-shao.png);" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/tags" class="mdui-ripple">标签</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">单点登陆（SSO）介绍</div>
+                           <a  class="index-list-biaoqian ">2019-11-26</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>单点登陆是很多企业进行企业项目整合都会用到的技术，单点登陆主要作用是简化用户认证流程，即登陆一次即可访问多个系统，退出一次全部退出。</p>
+<!-- more -->
+<h2 id="1-产生背景">1、产生背景</h2>
+<p>单点登陆的产生主要是随着企业业务的发展，企业会有许多系统来处理不通的业务，而如果各个系统均单独做登陆认证功能，会造成多个系统都需要开发一样的认证逻辑的功能，而且用户在使用时也需要频繁的进行登陆退回，而单点登陆，就是多个系统共同信任同一份票据，这份票据，可以在各个业务系统中进行使用，以此来实现身份认证的组合。</p>
+<h2 id="2-实现流程">2、实现流程</h2>
+<p>1、用户1登陆业务系统1<br>
+2、检查没有携带凭据，让浏览器重定向SSO Server 登陆验证并携带自当前请求路径（路径1）<br>
+3、用户没有登陆，跳转到登陆页面并携带（路径1）<br>
+4、用户登陆，并保存凭据，重定向到（路径1），并携带凭据<br>
+5、业务系统1 存储凭据<br>
+6、用户2登陆业务系统2<br>
+7、检查没有携带凭据，让浏览器重定向SSO Server 登陆验证并携带自当前请求路径（路径2）<br>
+8、用户已登陆，重定向到（路径2），并携带凭据<br>
+9、业务系统2，存储凭据</p>
+<h2 id="3-客户端与服务器端的功能">3、客户端与服务器端的功能</h2>
+<p>客户端：<br>
+1、拦截子系统未登录用户请求，跳转至sso认证中心<br>
+2、接收并存储sso认证中心发送的令牌<br>
+3、与服务器端通信，校验令牌的有效性<br>
+4、建立局部会话<br>
+5、拦截用户注销请求，向sso认证中心发送注销请求<br>
+服务器端：<br>
+1、验证用户的登录信息<br>
+2、创建全局会话<br>
+3、创建授权令牌<br>
+4、与客户端通信发送令牌<br>
+6、校验客户端令牌有效性<br>
+7、接收客户端注销请求，注销会话</p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://bofengsun.github.io//post/xiang-si-xiang-shou">相思相守</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://bofengsun.github.io//post/shiro-mi-ma-jia-mi">Shiro 密码加密与会话管理介绍</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '225619cd1fd2fb548ab9',
+    clientSecret: '761b00969ec5fbf4d3906d1872e6b45bd2079e53',
+    repo: 'bofengsun.github.io',
+    owner: 'bofengsun',
+    admin: ['bofengsun'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+ <script src="https://bofengsun.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <!-- <div class="toc-container mdui-float-right">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#1-%E4%BA%A7%E7%94%9F%E8%83%8C%E6%99%AF">1、产生背景</a></li>
+<li><a href="#2-%E5%AE%9E%E7%8E%B0%E6%B5%81%E7%A8%8B">2、实现流程</a></li>
+<li><a href="#3-%E5%AE%A2%E6%88%B7%E7%AB%AF%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AB%AF%E7%9A%84%E5%8A%9F%E8%83%BD">3、客户端与服务器端的功能</a></li>
+</ul>
+</li>
+</ul>
+
+              </div> -->
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            	
+                        <li class="social-link"><a href="https://github.com/bofengsun" target="_blank"><i class="iconfont icon-github"></i></a></li>
+                         
+                           
+                            	
+                        <li class="social-link"><a href="https://www.zhihu.com/people/wan-ming-you-ren-teng/activities" target="_blank"><i class="iconfont icon-zhihu"></i></a></li>
+                         
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/bofengsun" target="_blank">BOFENGSUN</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>
