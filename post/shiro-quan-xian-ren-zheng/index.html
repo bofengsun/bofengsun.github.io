@@ -1,0 +1,266 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>Shiro 权限认证 | 玩命有人疼</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://bofengsun.github.io//styles/main.css">
+          <script src="https://bofengsun.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://bofengsun.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-151730353-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'UA-151730353-1');
+</script>
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3"  style="background-image: url(https://bofengsun.github.io//post-images/shiro-quan-xian-ren-zheng.png);" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/tags" class="mdui-ripple">标签</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">Shiro 权限认证</div>
+                           <a  class="index-list-biaoqian ">2019-11-13</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>前面几篇文章中我们提到Shiro的几个主要功能中，其中还包括了权限认证，那么这一节 我们就简单体验一下Shiro的权限认证吧。</p>
+<!-- more -->
+<h2 id="1-实现权限认证逻辑">1、实现权限认证逻辑</h2>
+<p>基于前面的文章，自定义Realm继承AuthorizingRealm 需要实现doGetAuthenticationInfo 和 doGetAuthorizationInfo,其中doGetAuthenticationInfo主要用来身份认证，doGetAuthorizationInfo主要用来进行权限认证，具体代码如下：<br>
+前置代码：</p>
+<pre><code class="language-Java">    private static final Map&lt;String,Set&lt;String&gt;&gt; USER_ROLE= new HashMap&lt;&gt;();
+    static {
+        USER_ROLE.put(&quot;1&quot;,new HashSet&lt;&gt;(Arrays.asList(&quot;item:add&quot;,&quot;item:search&quot;,&quot;item:update&quot;,&quot;item:delete&quot;)));
+        USER_ROLE.put(&quot;2&quot;,new HashSet&lt;&gt;(Arrays.asList(&quot;item:add&quot;,&quot;item:search&quot;)));
+    }
+
+    @Override
+    public Set&lt;String&gt; getUserRoles(String userId) {
+        Set&lt;String&gt; result = USER_ROLE.get(userId);
+        return result!=null?result:Collections.EMPTY_SET;
+    }
+</code></pre>
+<pre><code class="language-Java">    @Override
+    protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
+        log.info(&quot;开始进行权限认证！&quot;);
+        SimpleAuthorizationInfo simpleAuthorizationInfo=new SimpleAuthorizationInfo();
+        String userId = (String)principalCollection.getPrimaryPrincipal();
+        Set&lt;String&gt; userRoles = roleService.getUserRoles(userId);
+        for (String userRole:userRoles){
+            simpleAuthorizationInfo.addStringPermission(userRole);
+        }
+        return simpleAuthorizationInfo;
+    }
+</code></pre>
+<h2 id="2-配置lifecyclebeanpostprocessor-defaultadvisorautoproxycreator-authorizationattributesourceadvisor">2、配置LifecycleBeanPostProcessor、DefaultAdvisorAutoProxyCreator、AuthorizationAttributeSourceAdvisor</h2>
+<p>因为Shiro需要对Controller进行代理，所以需要开启Controller的代理，需要配置LifecycleBeanPostProcessor、DefaultAdvisorAutoProxyCreator、AuthorizationAttributeSourceAdvisor</p>
+<pre><code class="language-Java">    @Bean
+    public LifecycleBeanPostProcessor lifecycleBeanPostProcessor(){
+        return new LifecycleBeanPostProcessor();
+    }
+    @Bean
+    public DefaultAdvisorAutoProxyCreator defaultAdvisorAutoProxyCreator(){
+        DefaultAdvisorAutoProxyCreator creator=new DefaultAdvisorAutoProxyCreator();
+        creator.setProxyTargetClass(true);
+        return creator;
+    }
+    @Bean
+    public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(SecurityManager securityManager) {
+        AuthorizationAttributeSourceAdvisor advisor=new AuthorizationAttributeSourceAdvisor();
+        advisor.setSecurityManager(securityManager);
+        return advisor;
+    }
+</code></pre>
+<h2 id="3-配置请求权限码">3、配置请求权限码</h2>
+<p>通过注解配置权限信息，@RequiresRoles、@RequiresPermissions 以@RequiresPermissions为例：</p>
+<pre><code class="language-Java">    @RequiresPermissions(&quot;item:search&quot;)
+    @GetMapping(&quot;/search&quot;)
+    public ResultVo&lt;String&gt; search(){
+        return ResultVo.success(&quot;search&quot;);
+    }
+    @RequiresPermissions(&quot;item:add&quot;)
+    @GetMapping(&quot;/add&quot;)
+    public ResultVo&lt;String&gt; add(){
+        return ResultVo.success(&quot;add&quot;);
+    }
+    @RequiresPermissions(&quot;item:update&quot;)
+    @GetMapping(&quot;/update&quot;)
+    public ResultVo&lt;String&gt; update(){
+        return ResultVo.success(&quot;update&quot;);
+    }
+    @RequiresPermissions(&quot;item:delete&quot;)
+    @GetMapping(&quot;/delete&quot;)
+    public ResultVo&lt;String&gt; delete(){
+        return ResultVo.success(&quot;delete&quot;);
+    }
+</code></pre>
+<h2 id="4-演示效果">4、演示效果</h2>
+<p>用户登陆：<br>
+<img src="https://bofengsun.github.io//post-images/1573745823357.png" alt="登陆用户"><br>
+有权限：<br>
+<img src="https://bofengsun.github.io//post-images/1573745976892.png" alt="有权限"><br>
+无权限：<br>
+<img src="https://bofengsun.github.io//post-images/1573746081151.png" alt="无权限"></p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://bofengsun.github.io//post/shiro-mi-ma-jia-mi">Shiro 密码加密与会话管理介绍</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://bofengsun.github.io//post/jmeter-ti-yan-zhi-lu">Jmeter 体验之旅</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '225619cd1fd2fb548ab9',
+    clientSecret: '761b00969ec5fbf4d3906d1872e6b45bd2079e53',
+    repo: 'bofengsun.github.io',
+    owner: 'bofengsun',
+    admin: ['bofengsun'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+ <script src="https://bofengsun.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <!-- <div class="toc-container mdui-float-right">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#1-%E5%AE%9E%E7%8E%B0%E6%9D%83%E9%99%90%E8%AE%A4%E8%AF%81%E9%80%BB%E8%BE%91">1、实现权限认证逻辑</a></li>
+<li><a href="#2-%E9%85%8D%E7%BD%AElifecyclebeanpostprocessor-defaultadvisorautoproxycreator-authorizationattributesourceadvisor">2、配置LifecycleBeanPostProcessor、DefaultAdvisorAutoProxyCreator、AuthorizationAttributeSourceAdvisor</a></li>
+<li><a href="#3-%E9%85%8D%E7%BD%AE%E8%AF%B7%E6%B1%82%E6%9D%83%E9%99%90%E7%A0%81">3、配置请求权限码</a></li>
+<li><a href="#4-%E6%BC%94%E7%A4%BA%E6%95%88%E6%9E%9C">4、演示效果</a></li>
+</ul>
+</li>
+</ul>
+
+              </div> -->
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            	
+                        <li class="social-link"><a href="https://github.com/bofengsun" target="_blank"><i class="iconfont icon-github"></i></a></li>
+                         
+                           
+                            	
+                        <li class="social-link"><a href="https://www.zhihu.com/people/wan-ming-you-ren-teng/activities" target="_blank"><i class="iconfont icon-zhihu"></i></a></li>
+                         
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/bofengsun" target="_blank">BOFENGSUN</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>
