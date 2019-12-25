@@ -1,0 +1,485 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>Spring Bean生命周期 | 玩命有人疼</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://bofengsun.github.io//styles/main.css">
+          <script src="https://bofengsun.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://bofengsun.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-151730353-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'UA-151730353-1');
+</script>
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3"  style="background-image: url(https://bofengsun.github.io//post-images/spring-bean-sheng-ming-zhou-qi.png);" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/tags" class="mdui-ripple">标签</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">Spring Bean生命周期</div>
+                           <a  class="index-list-biaoqian ">2019-12-25</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>Spring Boot Bean的生命周期，什么是Bean的生命周期，就是Bean从创建到销毁的过程。下面我们就看一看SpringBean的生命历程吧！</p>
+<!-- more -->
+<p>#Bean的生命周期过程描述<br>
+我们先看一下Bean的生命周期过程中都会经历些什么，我先简单解释一下，后面我们通过源码进行详细解释。首先Spring在实例化Bean的时候，会先调用它的构造函数，进行Bean的实例化，然后进行Bean的初始化，Bean的初始化经过三个阶段初始化之前（<strong>applyBeanPostProcessorsBeforeInitialization</strong>），其次是进行初始化（<strong>invokeInitMethods</strong>），最后是初始化之后（<strong>postProcessAfterInitialization</strong>），这就是Bean的初始化过程；然后就开始利用Bean进行业务逻辑处理，最后容器正常关闭，Spring开始销毁Bean，Bean的销毁过程相对比较简单，调用**DisposableBeanAdapter.destroy()**方法，该方法中有三个地方比较重要，分别触发Bean的生命周期方法，它们是：<strong>processor.postProcessBeforeDestruction(this.bean, this.beanName);<br>
+((DisposableBean) bean).destroy();<br>
+invokeCustomDestroyMethod(this.destroyMethod);</strong><br>
+下面我把用图片来进行直观展示：<br>
+<img src="https://bofengsun.github.io//post-images/1577242534383.png" alt="Bean的生命周期.png"><br>
+#实例运行<br>
+User类，这里就是普通的一个Bean,用来添加到容器中，观察其生命周期</p>
+<pre><code>package com.itbofeng.bean;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+public class User implements InitializingBean , DisposableBean {
+    private String name;
+    public User() {
+        System.out.println(&quot;调用Bean的函数(constructor)&quot;);
+    }
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        System.out.println(&quot;调用Bean的函数(setName/setAttribute)&quot;);
+        this.name = name;
+    }
+    @PostConstruct
+    public void postConstruct(){
+        System.out.println(&quot;调用Bean的函数(postConstruct)&quot;);
+    }
+    //MainConfig中@Bean 的initMethod
+    public void initMethod(){
+        System.out.println(&quot;调用Bean的函数(initMethod)&quot;);
+    }
+    //InitializingBean接口的方法afterPropertiesSet
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        System.out.println(&quot;调用Bean的函数(afterPropertiesSet)&quot;);
+    }
+    @PreDestroy
+    public void preDestroy(){
+        System.out.println(&quot;调用Bean的函数(preDestroy)&quot;);
+    }
+    //DisposableBean接口的方法destroy
+    @Override
+    public void destroy() throws Exception {
+        System.out.println(&quot;调用Bean的函数(destroy)&quot;);
+    }
+    //MainConfig中@Bean 的destroyMethod
+    public void destroyMethod(){
+        System.out.println(&quot;调用Bean的函数(destroyMethod)&quot;);
+    }
+}
+</code></pre>
+<p>CustomBeanPostProcessor类，用来观察BeanPostProcessor的运行时期</p>
+<pre><code>package com.itbofeng.bean;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Component;
+@Component
+public class CustomBeanPostProcessor implements BeanPostProcessor {
+    @Nullable
+    @Override
+    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+        if(bean.getClass()==User.class){
+            System.out.println(&quot;调用postProcessBeforeInitialization...&quot;);
+        }
+        return bean;
+    }
+    @Nullable
+    @Override
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        if(bean.getClass()==User.class){
+            System.out.println(&quot;调用postProcessAfterInitialization...&quot;);
+        }
+        return bean;
+    }
+}
+</code></pre>
+<p>MainConfig类，SpringBoot程序运行的主类，并将User和CustomBeanPostProcessor 加入到容器中</p>
+<pre><code>package com.itbofeng;
+import com.itbofeng.bean.User;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+@SpringBootApplication
+public class MainConfig {
+    public static void main(String[] args) {
+        SpringApplication.run(MainConfig.class,args);
+    }
+    @Bean(initMethod = &quot;initMethod&quot;,destroyMethod = &quot;destroyMethod&quot;)
+    public User user(){
+        return new User();
+    }
+}
+</code></pre>
+<p>运行结果查看<br>
+<img src="https://upload-images.jianshu.io/upload_images/8069900-af8e044c834478ef.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="运行结果.png"><br>
+#源码解析<br>
+初始化过程<br>
+首先我们将断点打到CustomBeanPostProcessor.postProcessBeforeInitialization的第一行代码，然后我看一下其方法调用栈：<br>
+![方法调用栈.png]<img src="https://bofengsun.github.io//post-images/1577242577818.png" alt=""><br>
+主要包括两个地方，一个是容器刷新，第二个是初始化Bean，我们先对这容器刷新的源码进行简单查看</p>
+<pre><code>public void refresh() throws BeansException, IllegalStateException {
+		synchronized (this.startupShutdownMonitor) {
+			// Prepare this context for refreshing.
+			prepareRefresh();
+
+			// Tell the subclass to refresh the internal bean factory.
+			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
+
+			// Prepare the bean factory for use in this context.
+			prepareBeanFactory(beanFactory);
+
+			try {
+				// Allows post-processing of the bean factory in context subclasses.
+				postProcessBeanFactory(beanFactory);
+
+				// Invoke factory processors registered as beans in the context.
+				invokeBeanFactoryPostProcessors(beanFactory);
+
+				// Register bean processors that intercept bean creation.
+				registerBeanPostProcessors(beanFactory);
+
+				// Initialize message source for this context.
+				initMessageSource();
+
+				// Initialize event multicaster for this context.
+				initApplicationEventMulticaster();
+
+				// Initialize other special beans in specific context subclasses.
+				onRefresh();
+
+				// Check for listener beans and register them.
+				registerListeners();
+
+				// Instantiate all remaining (non-lazy-init) singletons.
+				finishBeanFactoryInitialization(beanFactory);
+
+				// Last step: publish corresponding event.
+				finishRefresh();
+			}
+
+			catch (BeansException ex) {
+				if (logger.isWarnEnabled()) {
+					logger.warn(&quot;Exception encountered during context initialization - &quot; +
+							&quot;cancelling refresh attempt: &quot; + ex);
+				}
+
+				// Destroy already created singletons to avoid dangling resources.
+				destroyBeans();
+
+				// Reset 'active' flag.
+				cancelRefresh(ex);
+
+				// Propagate exception to caller.
+				throw ex;
+			}
+
+			finally {
+				// Reset common introspection caches in Spring's core, since we
+				// might not ever need metadata for singleton beans anymore...
+				resetCommonCaches();
+			}
+		}
+	}
+</code></pre>
+<p>注意<strong>finishBeanFactoryInitialization</strong>，上面说明也解释说该方法的作用是初始化所有剩下的非懒加载的单例Bean,从该描述也可以知道，懒加载和原型的Bean在该阶段并不会被加载，这部分代码是Spring容器刷新时的代码，也是Spring IOC比较核心的代码，在学习后面中，慢慢将该部分的代码慢慢学习，接下来我们看一下初始化Bean部分的代码：</p>
+<pre><code>protected Object initializeBean(final String beanName, final Object bean, @Nullable RootBeanDefinition mbd) {
+	//对实现了Aware接口的方法进行执行，方法就在下方，使用方法直接实现对应的Aware接口即可
+	if (System.getSecurityManager() != null) {
+		AccessController.doPrivileged((PrivilegedAction&lt;Object&gt;) () -&gt; {
+			invokeAwareMethods(beanName, bean);
+			return null;
+		}, getAccessControlContext());
+	}
+	else {
+		invokeAwareMethods(beanName, bean);
+	}
+
+	Object wrappedBean = bean;
+	if (mbd == null || !mbd.isSynthetic()) {
+		//执行实现了BeanPostProcessor的postProcessBeforeInitialization方法
+		wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
+	}
+
+	try {
+		//执行初始化方法
+		invokeInitMethods(beanName, wrappedBean, mbd);
+	}
+	catch (Throwable ex) {
+		throw new BeanCreationException(
+				(mbd != null ? mbd.getResourceDescription() : null),
+				beanName, &quot;Invocation of init method failed&quot;, ex);
+	}
+	if (mbd == null || !mbd.isSynthetic()) {
+		//执行实现了BeanPostProcessor的postProcessAfterInitialization方法
+		wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
+	}
+
+	return wrappedBean;
+}
+
+private void invokeAwareMethods(final String beanName, final Object bean) {
+	if (bean instanceof Aware) {
+		if (bean instanceof BeanNameAware) {
+			((BeanNameAware) bean).setBeanName(beanName);
+		}
+		if (bean instanceof BeanClassLoaderAware) {
+			ClassLoader bcl = getBeanClassLoader();
+			if (bcl != null) {
+				((BeanClassLoaderAware) bean).setBeanClassLoader(bcl);
+			}
+		}
+		if (bean instanceof BeanFactoryAware) {
+			((BeanFactoryAware) bean).setBeanFactory(AbstractAutowireCapableBeanFactory.this);
+		}
+	}
+}
+
+protected void invokeInitMethods(String beanName, final Object bean, @Nullable RootBeanDefinition mbd)
+			throws Throwable {
+
+	boolean isInitializingBean = (bean instanceof InitializingBean);
+	if (isInitializingBean &amp;&amp; (mbd == null || !mbd.isExternallyManagedInitMethod(&quot;afterPropertiesSet&quot;))) {
+		if (logger.isDebugEnabled()) {
+			logger.debug(&quot;Invoking afterPropertiesSet() on bean with name '&quot; + beanName + &quot;'&quot;);
+		}
+		//调用InitializingBean的afterPropertiesSet方法
+		if (System.getSecurityManager() != null) {
+			try {
+				AccessController.doPrivileged((PrivilegedExceptionAction&lt;Object&gt;) () -&gt; {
+					((InitializingBean) bean).afterPropertiesSet();
+					return null;
+				}, getAccessControlContext());
+			}
+			catch (PrivilegedActionException pae) {
+				throw pae.getException();
+			}
+		}
+		else {
+			((InitializingBean) bean).afterPropertiesSet();
+		}
+	}
+	//调用@Bean制定的的initMethod方法
+	if (mbd != null &amp;&amp; bean.getClass() != NullBean.class) {
+		String initMethodName = mbd.getInitMethodName();
+		if (StringUtils.hasLength(initMethodName) &amp;&amp;
+				!(isInitializingBean &amp;&amp; &quot;afterPropertiesSet&quot;.equals(initMethodName)) &amp;&amp;
+				!mbd.isExternallyManagedInitMethod(initMethodName)) {
+			invokeCustomInitMethod(beanName, bean, mbd);
+		}
+	}
+}
+</code></pre>
+<p>以上就是初始化阶段，我们会发现初始化过程中没有@PostConstruct注解标注的方法，那是因为对@PostConstruct的处理也是BeanPostProcessor的实现类<strong>InitDestroyAnnotationBeanPostProcessor</strong>，那么我们就应该有疑问为什么InitDestroyAnnotationBeanPostProcessor.postProcessBeforeDestruction为什么会在CustomBeanPostProcessor.postProcessBeforeInitialization之后进行，是因为如果不指定顺序默认我们的getOrder为0，而InitDestroyAnnotationBeanPostProcessor的getOrder为Ordered.LOWEST_PRECEDENCE=2147483647,getOrder越大则，优先级越低，所以我们自定义的在其之前，至此初始化部分结束。<br>
+下面我们简单看一下销毁阶段：</p>
+<pre><code>public void destroy() {
+	//处理@PreDestroy注解注释的方法
+	if (!CollectionUtils.isEmpty(this.beanPostProcessors)) {
+		for (DestructionAwareBeanPostProcessor processor : this.beanPostProcessors) {
+			processor.postProcessBeforeDestruction(this.bean, this.beanName);
+		}
+	}
+	//处理实现了DisposableBean接口的destroy的方法
+	if (this.invokeDisposableBean) {
+		if (logger.isDebugEnabled()) {
+			logger.debug(&quot;Invoking destroy() on bean with name '&quot; + this.beanName + &quot;'&quot;);
+		}
+		try {
+			if (System.getSecurityManager() != null) {
+				AccessController.doPrivileged((PrivilegedExceptionAction&lt;Object&gt;) () -&gt; {
+					((DisposableBean) bean).destroy();
+					return null;
+				}, acc);
+			}
+			else {
+				((DisposableBean) bean).destroy();
+			}
+		}
+		catch (Throwable ex) {
+			String msg = &quot;Invocation of destroy method failed on bean with name '&quot; + this.beanName + &quot;'&quot;;
+			if (logger.isDebugEnabled()) {
+				logger.warn(msg, ex);
+			}
+			else {
+				logger.warn(msg + &quot;: &quot; + ex);
+			}
+		}
+	}
+	//处理@Bean指定的destroyMethod方法
+	if (this.destroyMethod != null) {
+		invokeCustomDestroyMethod(this.destroyMethod);
+	}
+	else if (this.destroyMethodName != null) {
+		Method methodToCall = determineDestroyMethod(this.destroyMethodName);
+		if (methodToCall != null) {
+			invokeCustomDestroyMethod(methodToCall);
+		}
+	}
+}
+</code></pre>
+<p>#结束语<br>
+至此，我们Bean的生命周期探索初步结束，后面再做进一步深入学习，在学习本节课时要多进行调试，断点跟踪，会更加有效果。另外无论是在初始化还是在结束时都是处理的单例的Bean,而且在初始化时，处理的Bean还是非懒加载的，所以需要特殊说明：<strong>非懒加载的单实例Bean的生命周期如上;懒加载的单实例Bean是在第一次获取进行初始化过程;原型Bean是在每次获取时都进行初始化，而且Spring容器不会管理器销毁。</strong><br>
+最近在网上看到了一篇文章，很不错，详细的介绍了Spring IOC的原理，如果大家想详细了解Spring的IOC可以看一下：https://www.cnblogs.com/ITtangtang/p/3978349.html，好东西大家一起分享，🌹🍀🍎💰📱🌙🍁🍂🍃🌷💎🔫🏀⚽⚡👄🔥</p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> </div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://bofengsun.github.io//post/xiang-si-xiang-shou">相思相守</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '225619cd1fd2fb548ab9',
+    clientSecret: '761b00969ec5fbf4d3906d1872e6b45bd2079e53',
+    repo: 'bofengsun.github.io',
+    owner: 'bofengsun',
+    admin: ['bofengsun'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+ <script src="https://bofengsun.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <!-- <div class="toc-container mdui-float-right">
+                
+              </div> -->
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            	
+                        <li class="social-link"><a href="https://github.com/bofengsun" target="_blank"><i class="iconfont icon-github"></i></a></li>
+                         
+                           
+                            	
+                        <li class="social-link"><a href="https://www.zhihu.com/people/wan-ming-you-ren-teng/activities" target="_blank"><i class="iconfont icon-zhihu"></i></a></li>
+                         
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/bofengsun" target="_blank">BOFENGSUN</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>
