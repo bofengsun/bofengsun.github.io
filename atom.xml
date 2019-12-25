@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://bofengsun.github.io/</id>
     <title>玩命有人疼</title>
-    <updated>2019-12-25T06:33:31.539Z</updated>
+    <updated>2019-12-25T06:49:47.351Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://bofengsun.github.io/"/>
     <link rel="self" href="https://bofengsun.github.io//atom.xml"/>
@@ -18,16 +18,14 @@
         <updated>2019-12-25T06:30:19.000Z</updated>
         <summary type="html"><![CDATA[<p>我走在乡间的小路<br>
 想起了往事篇篇<br>
-你看<br>
-夏天，花丛，小道<br>
-萍水相逢，你的笑容，便永驻我心间</p>
+你看</p>
 ]]></summary>
         <content type="html"><![CDATA[<p>我走在乡间的小路<br>
 想起了往事篇篇<br>
-你看<br>
-夏天，花丛，小道<br>
-萍水相逢，你的笑容，便永驻我心间</p>
+你看</p>
 <!-- more -->
+<p>夏天，花丛，小道<br>
+萍水相逢，你的笑容，便永驻我心间</p>
 <p>我们一路走来<br>
 爱使你我相遇相知相思相守<br>
 你我在一起的两千多个日子<br>
@@ -49,14 +47,14 @@
 ]]></summary>
         <content type="html"><![CDATA[<p>Spring Boot Bean的生命周期，什么是Bean的生命周期，就是Bean从创建到销毁的过程。下面我们就看一看SpringBean的生命历程吧！</p>
 <!-- more -->
-<p>#Bean的生命周期过程描述<br>
-我们先看一下Bean的生命周期过程中都会经历些什么，我先简单解释一下，后面我们通过源码进行详细解释。首先Spring在实例化Bean的时候，会先调用它的构造函数，进行Bean的实例化，然后进行Bean的初始化，Bean的初始化经过三个阶段初始化之前（<strong>applyBeanPostProcessorsBeforeInitialization</strong>），其次是进行初始化（<strong>invokeInitMethods</strong>），最后是初始化之后（<strong>postProcessAfterInitialization</strong>），这就是Bean的初始化过程；然后就开始利用Bean进行业务逻辑处理，最后容器正常关闭，Spring开始销毁Bean，Bean的销毁过程相对比较简单，调用**DisposableBeanAdapter.destroy()**方法，该方法中有三个地方比较重要，分别触发Bean的生命周期方法，它们是：<strong>processor.postProcessBeforeDestruction(this.bean, this.beanName);<br>
+<h1 id="bean的生命周期过程描述">Bean的生命周期过程描述</h1>
+<p>我们先看一下Bean的生命周期过程中都会经历些什么，我先简单解释一下，后面我们通过源码进行详细解释。首先Spring在实例化Bean的时候，会先调用它的构造函数，进行Bean的实例化，然后进行Bean的初始化，Bean的初始化经过三个阶段初始化之前（<strong>applyBeanPostProcessorsBeforeInitialization</strong>），其次是进行初始化（<strong>invokeInitMethods</strong>），最后是初始化之后（<strong>postProcessAfterInitialization</strong>），这就是Bean的初始化过程；然后就开始利用Bean进行业务逻辑处理，最后容器正常关闭，Spring开始销毁Bean，Bean的销毁过程相对比较简单，调用**DisposableBeanAdapter.destroy()**方法，该方法中有三个地方比较重要，分别触发Bean的生命周期方法，它们是：<strong>processor.postProcessBeforeDestruction(this.bean, this.beanName);<br>
 ((DisposableBean) bean).destroy();<br>
 invokeCustomDestroyMethod(this.destroyMethod);</strong><br>
 下面我把用图片来进行直观展示：<br>
-<img src="https://bofengsun.github.io//post-images/1577242534383.png" alt="Bean的生命周期.png"><br>
-#实例运行<br>
-User类，这里就是普通的一个Bean,用来添加到容器中，观察其生命周期</p>
+<img src="https://bofengsun.github.io//post-images/1577242534383.png" alt="Bean的生命周期.png"></p>
+<h1 id="实例运行">实例运行</h1>
+<p>User类，这里就是普通的一个Bean,用来添加到容器中，观察其生命周期</p>
 <pre><code>package com.itbofeng.bean;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -146,9 +144,9 @@ public class MainConfig {
 }
 </code></pre>
 <p>运行结果查看<br>
-<img src="https://upload-images.jianshu.io/upload_images/8069900-af8e044c834478ef.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="运行结果.png"><br>
-#源码解析<br>
-初始化过程<br>
+<img src="https://upload-images.jianshu.io/upload_images/8069900-af8e044c834478ef.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="运行结果.png"></p>
+<h1 id="源码解析">源码解析</h1>
+<p>初始化过程<br>
 首先我们将断点打到CustomBeanPostProcessor.postProcessBeforeInitialization的第一行代码，然后我看一下其方法调用栈：<br>
 ![方法调用栈.png]<img src="https://bofengsun.github.io//post-images/1577242577818.png" alt=""><br>
 主要包括两个地方，一个是容器刷新，第二个是初始化Bean，我们先对这容器刷新的源码进行简单查看</p>
@@ -351,8 +349,8 @@ protected void invokeInitMethods(String beanName, final Object bean, @Nullable R
 	}
 }
 </code></pre>
-<p>#结束语<br>
-至此，我们Bean的生命周期探索初步结束，后面再做进一步深入学习，在学习本节课时要多进行调试，断点跟踪，会更加有效果。另外无论是在初始化还是在结束时都是处理的单例的Bean,而且在初始化时，处理的Bean还是非懒加载的，所以需要特殊说明：<strong>非懒加载的单实例Bean的生命周期如上;懒加载的单实例Bean是在第一次获取进行初始化过程;原型Bean是在每次获取时都进行初始化，而且Spring容器不会管理器销毁。</strong><br>
+<h1 id="结束语">结束语</h1>
+<p>至此，我们Bean的生命周期探索初步结束，后面再做进一步深入学习，在学习本节课时要多进行调试，断点跟踪，会更加有效果。另外无论是在初始化还是在结束时都是处理的单例的Bean,而且在初始化时，处理的Bean还是非懒加载的，所以需要特殊说明：<strong>非懒加载的单实例Bean的生命周期如上;懒加载的单实例Bean是在第一次获取进行初始化过程;原型Bean是在每次获取时都进行初始化，而且Spring容器不会管理器销毁。</strong><br>
 最近在网上看到了一篇文章，很不错，详细的介绍了Spring IOC的原理，如果大家想详细了解Spring的IOC可以看一下：https://www.cnblogs.com/ITtangtang/p/3978349.html，好东西大家一起分享，🌹🍀🍎💰📱🌙🍁🍂🍃🌷💎🔫🏀⚽⚡👄🔥</p>
 ]]></content>
     </entry>
