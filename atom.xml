@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://bofengsun.github.io/</id>
     <title>玩命有人疼</title>
-    <updated>2019-12-27T09:04:23.903Z</updated>
+    <updated>2019-12-27T09:11:06.237Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://bofengsun.github.io/"/>
     <link rel="self" href="https://bofengsun.github.io//atom.xml"/>
@@ -10,6 +10,176 @@
     <logo>https://bofengsun.github.io//images/avatar.png</logo>
     <icon>https://bofengsun.github.io//favicon.ico</icon>
     <rights>All rights reserved 2019, 玩命有人疼</rights>
+    <entry>
+        <title type="html"><![CDATA[Spring AOP]]></title>
+        <id>https://bofengsun.github.io//post/spring-aop</id>
+        <link href="https://bofengsun.github.io//post/spring-aop">
+        </link>
+        <updated>2019-12-15T09:08:31.000Z</updated>
+        <summary type="html"><![CDATA[<p>AOP称为面向切面编程，在程序开发中常用来解决一些系统公共的问题，比如日志，事务，权限拦截等等，本文主要讲述Spring AOP的使用。</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>AOP称为面向切面编程，在程序开发中常用来解决一些系统公共的问题，比如日志，事务，权限拦截等等，本文主要讲述Spring AOP的使用。</p>
+<!-- more -->
+<h1 id="基本概念">基本概念</h1>
+<p>1、Aspect(切面):通常是一个类，里面可以定义切入点和通知，比如Log类。<br>
+2、JointPoint(连接点):程序执行过程中明确的点，即在哪个地方进行拦截。<br>
+3、Advice(通知):AOP在特定的切入点上执行的增强处理，主要包括以下几种方式：before,after,afterReturning,afterThrowing,around<br>
+（1）前置通知（Before）：在目标方法前调用。<br>
+（2）后置通知（After）：在目标方法后调用，无论是否有异常都执行。<br>
+（3）环绕通知（Around）：将 Before 和 After ，甚至抛出增强和返回增强合到一起，即动态代理功能一样。<br>
+（4）返回通知（AfterReturning）：在方法返回结果后执行，该增强可以接收到目标方法返回结果，前提没有异常的情况下。<br>
+（5）异常通知（AfterThrowing）：在目标方法抛出对应的类型后执行，可以接收到对应的异常信息，前提抛出异常的情况下。<br>
+4、Pointcut(切入点):就是带有通知的连接点，在程序中主要体现为书写切入点表达式<br>
+5、AOP代理：AOP框架创建的对象，代理就是目标对象的加强。</p>
+<h1 id="具体实例">具体实例</h1>
+<p>该实例功能，在做除法运算时，将其日志打印输出，具体代码如下：</p>
+<h3 id="calcjava-业务类">Calc.java 业务类</h3>
+<pre><code>package com.itbofeng;
+import org.springframework.stereotype.Service;
+//核心业务逻辑类，保证业务逻辑类的功能单一，使用Spring Aop降低代码的侵入性
+@Service
+public class Calc {
+    //进行触发运算功能
+    public int div(int a, int b) {
+        return a/b;
+    }
+}
+</code></pre>
+<h3 id="logjava-切面类日志记录">Log.java 切面类：日志记录</h3>
+<pre><code>package com.itbofeng;
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.*;
+import org.springframework.stereotype.Component;
+import java.util.Arrays;
+
+//切面类：日志记录功能
+@Aspect
+@Component
+public class Log {
+
+    //切点
+    @Pointcut(&quot;execution(public * com.itbofeng.*.*(..))&quot;)
+    public void logPointCut(){}
+
+    //前置通知
+    @Before(&quot;logPointCut()&quot;)
+    public void calcBefore(JoinPoint joinPoint){
+        String name=joinPoint.getSignature().getName();
+        Object [] args=joinPoint.getArgs();
+        System.out.println(&quot;Log.calcBefore exec method &quot;+name+&quot;,the args are&quot;+ Arrays.asList(args));
+    }
+    //返回通知
+    @AfterReturning(returning = &quot;ret&quot;,pointcut = &quot;logPointCut()&quot;)
+    public void  calcAfterReturning(JoinPoint joinPoint,Object ret){
+        String name=joinPoint.getSignature().getName();
+        Object [] args=joinPoint.getArgs();
+        System.out.println(&quot;Log.AfterReturning exec method &quot;+name+&quot;,the args are&quot;+ Arrays.asList(args)+&quot;,the result is &quot;+ret);
+    }
+
+    //异常通知
+    @AfterThrowing(pointcut=&quot;logPointCut()&quot;,throwing=&quot;e&quot;)
+    public void  calcAfterThrowing(JoinPoint joinPoint,Exception e){
+        String name=joinPoint.getSignature().getName();
+        Object [] args=joinPoint.getArgs();
+        System.out.println(&quot;Log.AfterThrowing exec method &quot;+name+&quot;,the args are&quot;+ Arrays.asList(args)+&quot;,the Exception is &quot;+e.getMessage());
+    }
+    //后置通知
+    @After(&quot;logPointCut()&quot;)
+    public void calcAfter(JoinPoint joinPoint){
+        String name=joinPoint.getSignature().getName();
+        Object [] args=joinPoint.getArgs();
+        System.out.println(&quot;Log.calcAfter exec method &quot;+name+&quot;,the args are&quot;+ Arrays.asList(args)+&quot;....&quot;);
+    }
+
+
+    @Around(&quot;logPointCut()&quot;)
+    public Object calcAround(ProceedingJoinPoint proceedingJoinPoint){
+        //相当于前置通知
+        Object [] args=proceedingJoinPoint.getArgs();//参数
+        System.out.println(&quot;Log.calcAround before...,the args are&quot;+Arrays.asList(args));
+        Object ret=null;
+        try {
+            ret=proceedingJoinPoint.proceed();//返回值
+            //相当于返回通知
+            System.out.println(&quot;Log.calcAround AfterReturning...,the result is &quot;+ret);
+        } catch (Throwable e) {
+            //相当于异常通知
+            System.out.println(&quot;Log.calcAround AfterThrowing...&quot;+e.getMessage());
+            e.printStackTrace();
+        }finally {
+            //相当于后置通知
+            System.out.println(&quot;Log.calcAround after...&quot;);
+            return ret;
+        }
+    }
+}
+</code></pre>
+<h3 id="mainconfigjava-配置类">MainConfig.java 配置类</h3>
+<pre><code>package com.itbofeng;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+@Configuration
+@ComponentScan
+//开启AspectJ自动代理功能相当于xml中的&lt;aop:aspectj-autoproxy /&gt;
+@EnableAspectJAutoProxy
+//配置类：这里使用的是基于注解的方式，相当于xml方式的配置文件
+public class MainConfig {
+
+}
+</code></pre>
+<h3 id="aopapplicationtestsjava-测试类">AopApplicationTests.java 测试类</h3>
+<pre><code>package com.itbofeng;
+import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+//测试类
+public class AopApplicationTests {
+	@Test
+	public void testAop() throws Exception {
+		ApplicationContext applicationContext=new AnnotationConfigApplicationContext(MainConfig.class);
+		Calc calc=applicationContext.getBean(Calc.class);
+		calc.div(1,1);//改变这里为1/0可以测试异常情况下
+	}
+}
+</code></pre>
+<h1 id="运行结果">运行结果：</h1>
+<p>运行1：前提说明：先注释环绕通知，运行calc.div(1,1);正常情况下：</p>
+<pre><code>Log.calcBefore exec method div,the args are[1, 1]
+Log.calcAfter exec method div,the args are[1, 1]....
+Log.AfterReturning exec method div,the args are[1, 1],the result is 1
+
+Process finished with exit code 0
+</code></pre>
+<p>运行2：前提说明：先注释环绕通知，运行calc.div(1,0);异常情况下：</p>
+<pre><code>Log.calcBefore exec method div,the args are[1, 0]
+Log.calcAfter exec method div,the args are[1, 0]....
+Log.AfterThrowing exec method div,the args are[1, 0],the Exception is / by zero
+
+java.lang.ArithmeticException: / by zero
+</code></pre>
+<p>运行3：前提说明：先注释除环绕外的其他通知，运行calc.div(1,1);正常情况下：</p>
+<pre><code>Log.calcAround before...,the args are[1, 1]
+Log.calcAround AfterReturning...,the result is 1
+Log.calcAround after...
+
+Process finished with exit code 0
+</code></pre>
+<p>运行3：前提说明：先注释除环绕外的其他通知，运行calc.div(1,0);异常情况下：</p>
+<pre><code>Log.calcAround before...,the args are[1, 0]
+Log.calcAround AfterThrowing.../ by zero
+Log.calcAround after...
+java.lang.ArithmeticException: / by zero
+</code></pre>
+<p>小结：<br>
+本文主要讲解了AOP中的基本概念，以及简单的使用Spring AOP，主要是为了体验一下什么是AOP，在本文中需要掌握以下三个方面：</p>
+<p><strong>1、AOP的理解:面向切面编程，是一种编程思想，就像面向对象编程一样,Spring AOP只是一个具体的实现，就像Java是面向对象语言一样。</strong></p>
+<p><strong>2、Spring AOP在应用程序中应用场景：在应用程序中AOP主要承担一些系统级别的功能也即一些通用的功能，如日志记录，权限校验，错误处理，事务控制等。</strong></p>
+<p><strong>3、注解的使用：需要掌握理解这些注解的使用，以及每个通知方法执行时机。</strong></p>
+<p>最后：我这里有<strong>Spring、Spring Boot相关的视频教程</strong>（由于各种原因，不方便在此公开，还请见谅，不过这视频是我见到我认为最好的教程，不过教程也<strong>建议有过Spring使用经验的朋友观看</strong>，这样效果会更加好，有好多地方会<strong>涉及原理讲解</strong>，没有使用过的话，压力会有点大），我就是一边没事的时候看看教程，加上自己的理解，写文章的，所以文章有误的地方，还请大家指正，我一定会虚心学习的，有需要视频教程的朋友，可以<strong>私信我</strong>。<strong>如果大家觉得文章不错，点个赞，关注一下，感谢你的支持。</strong></p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[注解基本知识]]></title>
         <id>https://bofengsun.github.io//post/zhu-jie-ji-ben-zhi-shi</id>
@@ -1151,297 +1321,6 @@ public class ShiroConfig {
 1、请求认证中心时，需要将验证后需要跳转的URL作为请求参数；<br>
 2、服务端修改为不仅可以从Cookie和Header中获取对应的token或者sessionId，还需要可以从请求参数里获取到对应的值；<br>
 3、服务端认证成功后将token或者sessionId作为参数重定向到登陆认证的回调地址。</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Shiro 身份认证]]></title>
-        <id>https://bofengsun.github.io//post/shiro-authentication</id>
-        <link href="https://bofengsun.github.io//post/shiro-authentication">
-        </link>
-        <updated>2019-11-10T10:57:42.000Z</updated>
-        <summary type="html"><![CDATA[<p>上一节 【Shiro 初体验】中我们认识了几个Shiro中重要的概念，以及一个QuickStart代码示例演示了Shiro的基本使用，也知道Shiro的几个主要功能，首先就是身份认证，那么下面我们就来看一下Shiro是如何进行身份认证的吧。</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>上一节 【Shiro 初体验】中我们认识了几个Shiro中重要的概念，以及一个QuickStart代码示例演示了Shiro的基本使用，也知道Shiro的几个主要功能，首先就是身份认证，那么下面我们就来看一下Shiro是如何进行身份认证的吧。</p>
-<!-- more -->
-<p>在上一节中我们看到Shiro的登陆，当时的用户信息是在配置文件中，但在实际项目中并不会这样，而是存储在数据库中那么，这种情况下Shiro又是怎样进行身份认证的呢？我们对上一章的代码做一个简单的修改，以了解认证的过程：<br>
-依赖包：</p>
-<pre><code class="language-XML">&lt;dependencies&gt;
-        &lt;dependency&gt;
-            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
-            &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
-        &lt;/dependency&gt;
-        &lt;dependency&gt;
-            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
-            &lt;artifactId&gt;spring-boot-starter-test&lt;/artifactId&gt;
-            &lt;scope&gt;test&lt;/scope&gt;
-        &lt;/dependency&gt;
-        &lt;dependency&gt;
-            &lt;groupId&gt;org.projectlombok&lt;/groupId&gt;
-            &lt;artifactId&gt;lombok&lt;/artifactId&gt;
-            &lt;version&gt;1.18.8&lt;/version&gt;
-        &lt;/dependency&gt;
-        &lt;!--整合Shiro--&gt;
-        &lt;dependency&gt;
-            &lt;groupId&gt;org.apache.shiro&lt;/groupId&gt;
-            &lt;artifactId&gt;shiro-spring&lt;/artifactId&gt;
-            &lt;version&gt;1.4.0&lt;/version&gt;
-        &lt;/dependency&gt;
-    &lt;/dependencies&gt;
-</code></pre>
-<p>前置代码：</p>
-<pre><code class="language-Java">/**
- * 统一维护返回的数据
- */
-public enum Result{
-    //默认返回数据
-    SUCCESS(0,&quot;请求成功！&quot;),
-    FAILURE(500,&quot;请求失败！&quot;),
-    //认证授权部分
-    LOGIN_FAILURE(501,&quot;用户名或者密码错误！&quot;),
-    LOGIN_FAILURE_LOCK(501,&quot;用户被锁定,请联系管理员！&quot;),
-    LOGIN_FAILURE_RELOGIN(502,&quot;用户已经登陆,无须再次登陆！&quot;),
-    AUTH_FAILURE(511,&quot;无权限！&quot;);
-
-    private Integer code;
-    private String msg;
-    private Result(Integer code,String msg){
-        this.code=code;
-        this.msg=msg;
-    }
-    public Integer getCode() {
-        return code;
-    }
-    public String getMsg() {
-        return msg;
-    }
-}
-/**
- * 统一返回的数据类型
- */
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class ResultVo&lt;T&gt; {
-    private Integer code;
-    private String msg;
-    private T data;
-    public static &lt;T&gt; ResultVo&lt;T&gt; success(T data){
-        return new ResultVo&lt;&gt;(Result.SUCCESS.getCode(),Result.SUCCESS.getMsg(),data);
-    }
-    public static&lt;T&gt; ResultVo&lt;T&gt; failure(Result result){
-        return new ResultVo&lt;&gt;(result.getCode(),result.getMsg(),null);
-    }
-}
-</code></pre>
-<p>Shiro的配置：Realm、SecurityManager、shiroFilter</p>
-<ul>
-<li>Relam:安全数据</li>
-<li>SecurityManager： Shiro 的大管家负责组件协调</li>
-<li>shiroFilter： Filter对哪些请求进行拦截</li>
-</ul>
-<pre><code class="language-Java">/**
- * Shiro 配置
- */
-@Configuration
-public class ShiroConfig {
-
-    /**
-     * 配置ShiroFilter
-     * @param securityManager 注入SecurityManager
-     * @return ShiroFilterFactoryBean
-     */
-    @Bean(name = &quot;shiroFilter&quot;)
-    public ShiroFilterFactoryBean shiroFilter(SecurityManager securityManager) {
-        ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
-        shiroFilterFactoryBean.setSecurityManager(securityManager);
-        Map&lt;String, String&gt; filterChainDefinitionMap = new LinkedHashMap&lt;&gt;();
-        filterChainDefinitionMap.put(&quot;/auth/login&quot;, &quot;anon&quot;);
-        filterChainDefinitionMap.put(&quot;/**&quot;, &quot;authc&quot;);
-        shiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
-        return shiroFilterFactoryBean;
-    }
-
-    /**
-     * 配置SecurityManager
-     * @param customRealm 注入自定义Realm
-     * @return SecurityManager
-     */
-    @Bean
-    public SecurityManager securityManager(CustomRealm customRealm) {
-        DefaultWebSecurityManager defaultSecurityManager = new DefaultWebSecurityManager();
-        defaultSecurityManager.setRealm(customRealm);
-        return defaultSecurityManager;
-    }
-
-    /**
-     * 配置自定义的Realm
-     * @return CustomRealm
-     */
-    @Bean
-    public CustomRealm customRealm() {
-        CustomRealm customRealm = new CustomRealm();
-        return customRealm;
-    }
-}
-</code></pre>
-<p>登陆认证部分的代码：</p>
-<pre><code class="language-Java">/**
- * 认证控制器
- */
-@RestController
-@RequestMapping(&quot;/auth&quot;)
-@Slf4j
-public class AuthController {
-
-    /**
-     * 登陆
-     * @param username 用户名
-     * @param password 密码
-     * @return 登陆结果
-     */
-    @PostMapping(&quot;/login&quot;)
-    public ResultVo&lt;String&gt; login(@RequestParam(&quot;username&quot;) String username,@RequestParam(&quot;password&quot;) String password){
-        Subject currentUser = SecurityUtils.getSubject();
-        if (!currentUser.isAuthenticated()) {
-            UsernamePasswordToken token = new UsernamePasswordToken(username, password);
-            try {
-                currentUser.login(token);
-                return ResultVo.success(currentUser.getSession().getId().toString());
-            }catch (LockedAccountException lae) {
-                return ResultVo.failure(Result.LOGIN_FAILURE_LOCK);
-            }
-            catch (AuthenticationException ae) {
-                return ResultVo.failure(Result.LOGIN_FAILURE);
-            }
-        }else {
-            return ResultVo.failure(Result.LOGIN_FAILURE_RELOGIN);
-        }
-    }
-}
-</code></pre>
-<p>流程分析：<br>
-1、先通过SecurityUtils#getSubject()获取当前用户<br>
-2、Subject#isAuthenticated()调用判断当前用户是否登陆<br>
-3、若没用进行登陆认证，则将用户的username和password为封装UsernamePasswordToken<br>
-4、调用Subject#login(token)进行登陆<br>
-5、通过自定义Realm进行身份认证，自定义Realm如果只是用来进行身份认证则只需继承org.apache.shiro.realm.AuthenticatingRealm即可，如果还需要进行鉴权，则需要继承org.apache.shiro.realm.AuthorizingRealm,这里我们就先继承AuthenticatingRealm。<br>
-查看Realm的前置代码：</p>
-<pre><code class="language-Java">/**
- * 用户实体信息
- */
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-public class User {
-
-    /**
-     * 逻辑ID
-     */
-    private String id;
-    /**
-     * 用户名(唯一)
-     */
-    private String username;
-    /**
-     * 密码
-     */
-    private String password;
-    /**
-     * 状态是否锁定:1 是；0否
-     */
-    private Integer status;
-}
-/**
- * 用户服务
- */
-public interface UserService {
-    /**
-     * 根据用户名获取用户
-     * @param username 用户名
-     * @return User
-     */
-    User getByUsername(String username);
-}
-@Service
-public class UserServiceImpl implements UserService {
-    /**
-     * 初始化用户数据源
-     */
-    static final Map&lt;String,User&gt; USERS = new HashMap&lt;&gt;();
-    static {
-        USERS.put(&quot;admin&quot;,User.builder()
-                .id(&quot;1&quot;)
-                .username(&quot;admin&quot;)
-                .password(&quot;123456&quot;)
-                .status(0)
-                .build());
-        USERS.put(&quot;guest&quot;,User.builder()
-                .id(&quot;2&quot;)
-                .username(&quot;guest&quot;)
-                .password(&quot;123456&quot;)
-                .status(0)
-                .build());
-        USERS.put(&quot;lockeduser&quot;,User.builder()
-                .id(&quot;2&quot;)
-                .username(&quot;lockeduser&quot;)
-                .password(&quot;123456&quot;)
-                .status(1)
-                .build());
-    }
-
-    @Override
-    public User getByUsername(String username) {
-        return USERS.get(username);
-    }
-}
-/**
- * 常量类
- */
-public interface Constant {
-    /**
-     * 用户被锁定状态
-     */
-    Integer USER_LOCKED=1;
-}
-/**
- * 自定义Realm
- */
-@Slf4j
-public class CustomRealm extends AuthenticatingRealm {
-
-    @Autowired
-    private UserService userService;
-
-    /**
-     * 实现该方法进行认证，在调用Subject#login的时候会进入该方法
-     * @param authenticationToken 令牌
-     * @return 认证的信息
-     * @throws AuthenticationException 认证异常
-     */
-    @Override
-    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
-        log.info(&quot;开始进行身份认证！&quot;);
-        UsernamePasswordToken usernamePasswordToken=(UsernamePasswordToken)authenticationToken;
-        String username = usernamePasswordToken.getUsername();
-        User user = userService.getByUsername(username);
-        if(user==null){
-            log.info(&quot;用户未找到！&quot;);
-            throw new UnknownAccountException(Result.LOGIN_FAILURE.getMsg());
-        }else if (Constant.USER_LOCKED.equals(user.getStatus())){
-            log.info(&quot;用户被锁定！&quot;);
-            throw new LockedAccountException(Result.LOGIN_FAILURE_LOCK.getMsg());
-        }else {
-            String principal=username;
-            String credentials=user.getPassword();
-            String realmName=getName();
-            SimpleAuthenticationInfo simpleAuthenticationInfo=new SimpleAuthenticationInfo(principal,credentials,realmName);
-            log.info(&quot;认证成功！&quot;);
-            return simpleAuthenticationInfo;
-        }
-    }
-}
-</code></pre>
 ]]></content>
     </entry>
 </feed>
