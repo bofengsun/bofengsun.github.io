@@ -1,0 +1,434 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>注解基本知识 | 玩命有人疼</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://bofengsun.github.io//styles/main.css">
+          <script src="https://bofengsun.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://bofengsun.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-151730353-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'UA-151730353-1');
+</script>
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/tags" class="mdui-ripple">标签</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">注解基本知识</div>
+                           <a  class="index-list-biaoqian ">2019-12-11</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>注解：在SpringBoot中存在大量的注解，我们需要对注解有一个基本的认识以及应用，主要包括这几个方面：注解的分类、注解的语法、注解的使用、注解解析</p>
+<h1 id="注解">注解</h1>
+<p>我对注解的理解是，注解就是一种标记，通过这个标记我们可以获取一定的关联信息。</p>
+<h1 id="为什么要学习注解">为什么要学习注解</h1>
+<p>在这里主要是现有的框架中存在大量的注解，我们需要知道主键的基本概念以及使用方法，能够更加理解这些框架，另一方面，学习注解，我们可以开发自定义注解使得代码更加简洁清晰。</p>
+<h1 id="注解的分类">注解的分类</h1>
+<h3 id="1-按照声明周期">1、按照声明周期</h3>
+<p>源码注解（仅在.java文件中存在，经过编译就不存在了）<br>
+编译时注解（在编译时起作用，即在.class文件中也仍然存在）<br>
+运行时注解（在运行阶段起作用，有时会影响程序的运行逻辑）</p>
+<h3 id="2-按照来源">2、按照来源</h3>
+<p>JDK自带的注解<br>
+第三方框架注解<br>
+自定义注解</p>
+<h3 id="3-元注解对注解进行注解的注解">3、元注解（对注解进行注解的注解）</h3>
+<h2 id="注解的语法">注解的语法</h2>
+<p>我们首先看一下@SpringBootApplication注解，这是SpringBoot HelloWorld程序中的主类的主键，我们看一下他的源码</p>
+<pre><code>package org.springframework.boot.autoconfigure;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.context.TypeExcludeFilter;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.core.annotation.AliasFor;
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+@SpringBootConfiguration
+@EnableAutoConfiguration
+@ComponentScan(excludeFilters = {
+		@Filter(type = FilterType.CUSTOM, classes = TypeExcludeFilter.class),
+		@Filter(type = FilterType.CUSTOM, classes = AutoConfigurationExcludeFilter.class) })
+public @interface SpringBootApplication {
+    //...
+}
+</code></pre>
+<p>我们通过该主键就可以帮我们自动配置好SpringBoot应用程序，通过包名我们可以看到@SpringBootConfiguration、@EnableAutoConfiguration、@ComponentScan这三个注解也是属于Spring自己的注解，所以@SpringBootApplication注解是一个组合注解，去除这些组合信息，以及不必要的代码，我们再来看一下该注解：</p>
+<pre><code>@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+public @interface SpringBootApplication {
+    //...
+}
+</code></pre>
+<p>这就是一个注解的基本框架，首先我们知道，定义一个主键的关键字是@interface，另外我们还看到有@Target、@Retention、@Documented、@Inherited四个注解就是标注在注解上的注解即元注解，下面我们对这四个注解进行详细的讲解：<br>
+<strong>@Target</strong>：注解的作用目标，即<strong>作用域</strong>。<br>
+可以看到它的取值是一个枚举类型，我们看一下该枚举源码：</p>
+<pre><code>public enum ElementType {
+    /**Class, interface (including annotation type), or enum declaration*/
+    /** 类，接口   重要*/
+    TYPE,
+    
+    /** Field declaration (includes enum constants) */
+    /** 字段声明  重要*/
+    FIELD,
+
+    /** Method declaration */
+     /** 方法声明  重要*/
+    METHOD,
+
+    /** Formal parameter declaration */
+    /** 参数声明  重要*/
+    PARAMETER,
+
+    /** Constructor declaration */
+    /** 构造函数声明  重要*/
+    CONSTRUCTOR,
+
+    /** Local variable declaration */
+    /** 构局部变量声明*/
+    LOCAL_VARIABLE,
+
+    /** Annotation type declaration */
+    /** 注解类型声明*/
+    ANNOTATION_TYPE,
+
+    /** Package declaration*/
+    /** 包声明*/
+    PACKAGE,
+
+    /**
+     * Type parameter declaration
+     *
+     * @since 1.8
+     */
+    TYPE_PARAMETER,
+
+    /**
+     * Use of a type
+     *
+     * @since 1.8
+     */
+    TYPE_USE
+}
+</code></pre>
+<p>注解的作用域可以来自这些值</p>
+<pre><code>@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.ANNOTATION_TYPE)
+public @interface Target {
+    /**
+     * Returns an array of the kinds of elements an annotation type
+     * can be applied to.
+     * @return an array of the kinds of elements an annotation type
+     * can be applied to
+     */
+    ElementType[] value();
+}
+</code></pre>
+<p>通过查看@Target的源码可以知道，其取值是一个ElementType[]数组所以，其值也可以是ElementType中的组合例如</p>
+<pre><code>@Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface Bean {
+  //...
+}
+</code></pre>
+<p>Spring中的@Bean注解的作用域就是可以是在方法声明中或者注解类型声明中。<br>
+<strong>@Retention</strong>：表示注解的声明周期，即可以是源码阶段、编译时、运行时，我们可以看一下RetentionPolicy枚举的源码</p>
+<pre><code>public enum RetentionPolicy {
+    /**
+     * Annotations are to be discarded by the compiler. 
+     * 源码阶段
+     */
+    SOURCE,
+
+    /**
+     * Annotations are to be recorded in the class file by the compiler
+     * but need not be retained by the VM at run time.  This is the default
+     * behavior.
+     * 编译时阶段
+     */
+    CLASS,
+
+    /**
+     * Annotations are to be recorded in the class file by the compiler and
+     * retained by the VM at run time, so they may be read reflectively.
+     * 运行时阶段
+     * @see java.lang.reflect.AnnotatedElement
+     */
+    RUNTIME
+}
+</code></pre>
+<p><strong>@Documented</strong>：标识在生成javadoc文档时包含该注解信息<br>
+<strong>@Inherited</strong>:标识允许子类继承<br>
+<strong>注解的成员</strong>：注解的成员以无参无异常的方法进行声明，可以指定默认值，成员的类型包括基本数据类型以及String、Class、Annotation、Enumeration<br>
+##注解的使用<br>
+@&lt;注解名&gt;（&lt;成员1&gt;=&lt;成员1值&gt;，&lt;成员2&gt;=&lt;成员2值&gt;，...）<br>
+##注解解析<br>
+注解解析主要是利用反射进行解析的下面我们看一个简单的例子</p>
+<pre><code>package com.example.demo.annotation;
+
+import java.lang.annotation.*;
+/**
+ * 描述：@Description用来对类或者方法进行注释说明的注解
+ */
+@Target({ElementType.TYPE,ElementType.METHOD})//作用域：类、方法
+@Retention(RetentionPolicy.RUNTIME)//生命周期  运行时
+@Inherited//允许继承
+@Documented//生成javadoc描述符
+public @interface Description {
+    String value();
+}
+</code></pre>
+<pre><code>package com.example.demo.annotation;
+
+/**
+ * 描述：普通类，用来使用@Description注解
+ */
+@Description(&quot;用户类&quot;)
+public class User {
+
+    private String username;
+
+    private String password;
+
+    @Description(&quot;用户名&quot;)
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+    @Description(&quot;密码&quot;)
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+}
+</code></pre>
+<pre><code>package com.example.demo.annotation;
+
+import java.lang.reflect.Method;
+
+/**
+ * 描述：解析注解
+ */
+public class ParseAnnotation {
+
+    public static void main(String[] args) throws ClassNotFoundException {
+        //利用反射获取类信息
+        Class c=Class.forName(&quot;com.example.demo.annotation.User&quot;);
+        //判断是否为@Description注解标注的类
+        boolean isDescriptionAnnotationClass=c.isAnnotationPresent(Description.class);
+        if(isDescriptionAnnotationClass){
+            //如果是获取注解信息
+            Description description= (Description) c.getAnnotation(Description.class);
+            //输出
+            System.out.println(description.value());
+        }
+        //利用反射获取所有方法信息
+        Method [] ms=c.getMethods();
+        for (Method m:ms){
+            //判断是否为@Description注解标注的方法
+            boolean isDescriptionAnnotationMethod=m.isAnnotationPresent(Description.class);
+            if(isDescriptionAnnotationMethod){
+                //如果是获取注解信息
+                Description description= (Description) m.getAnnotation(Description.class);
+                //输出
+                System.out.println(description.value());
+            }
+        }
+    }
+}
+</code></pre>
+<p>运行结果：<br>
+<img src="https://upload-images.jianshu.io/upload_images/8069900-bac4addc5cc531d6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="注解.png"></p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> </div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://bofengsun.github.io//post/spring-boot-chang-yong-zhu-jie">Spring Boot 常用注解</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '225619cd1fd2fb548ab9',
+    clientSecret: '761b00969ec5fbf4d3906d1872e6b45bd2079e53',
+    repo: 'bofengsun.github.io',
+    owner: 'bofengsun',
+    admin: ['bofengsun'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+ <script src="https://bofengsun.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <!-- <div class="toc-container mdui-float-right">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E6%B3%A8%E8%A7%A3">注解</a></li>
+<li><a href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%AD%A6%E4%B9%A0%E6%B3%A8%E8%A7%A3">为什么要学习注解</a></li>
+<li><a href="#%E6%B3%A8%E8%A7%A3%E7%9A%84%E5%88%86%E7%B1%BB">注解的分类</a><br>
+*
+<ul>
+<li><a href="#1-%E6%8C%89%E7%85%A7%E5%A3%B0%E6%98%8E%E5%91%A8%E6%9C%9F">1、按照声明周期</a></li>
+<li><a href="#2-%E6%8C%89%E7%85%A7%E6%9D%A5%E6%BA%90">2、按照来源</a></li>
+<li><a href="#3-%E5%85%83%E6%B3%A8%E8%A7%A3%E5%AF%B9%E6%B3%A8%E8%A7%A3%E8%BF%9B%E8%A1%8C%E6%B3%A8%E8%A7%A3%E7%9A%84%E6%B3%A8%E8%A7%A3">3、元注解（对注解进行注解的注解）</a></li>
+<li><a href="#%E6%B3%A8%E8%A7%A3%E7%9A%84%E8%AF%AD%E6%B3%95">注解的语法</a></li>
+</ul>
+</li>
+</ul>
+
+              </div> -->
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            	
+                        <li class="social-link"><a href="https://github.com/bofengsun" target="_blank"><i class="iconfont icon-github"></i></a></li>
+                         
+                           
+                            	
+                        <li class="social-link"><a href="https://www.zhihu.com/people/wan-ming-you-ren-teng/activities" target="_blank"><i class="iconfont icon-zhihu"></i></a></li>
+                         
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/bofengsun" target="_blank">BOFENGSUN</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

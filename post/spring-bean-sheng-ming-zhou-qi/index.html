@@ -53,11 +53,11 @@
                         <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
                          <article class="mdui-shadow-10 mdui-p-a-2 post-list">
                            <div class="mdui-typo-display-1 mdui-m-b-3">Spring Bean生命周期</div>
-                           <a  class="index-list-biaoqian ">2019-12-25</a>
+                           <a  class="index-list-biaoqian ">2019-11-03</a>
                            <div class="mdui-typo mdui-m-t-3 post-neirong"><p>Spring Boot Bean的生命周期，什么是Bean的生命周期，就是Bean从创建到销毁的过程。下面我们就看一看SpringBean的生命历程吧！</p>
 <!-- more -->
 <h1 id="bean的生命周期过程描述">Bean的生命周期过程描述</h1>
-<p>我们先看一下Bean的生命周期过程中都会经历些什么，我先简单解释一下，后面我们通过源码进行详细解释。首先Spring在实例化Bean的时候，会先调用它的构造函数，进行Bean的实例化，然后进行Bean的初始化，Bean的初始化经过三个阶段初始化之前（<strong>applyBeanPostProcessorsBeforeInitialization</strong>），其次是进行初始化（<strong>invokeInitMethods</strong>），最后是初始化之后（<strong>postProcessAfterInitialization</strong>），这就是Bean的初始化过程；然后就开始利用Bean进行业务逻辑处理，最后容器正常关闭，Spring开始销毁Bean，Bean的销毁过程相对比较简单，调用**DisposableBeanAdapter.destroy()**方法，该方法中有三个地方比较重要，分别触发Bean的生命周期方法，它们是：<strong>processor.postProcessBeforeDestruction(this.bean, this.beanName);<br>
+<p>我们先看一下Bean的生命周期过程中都会经历些什么，我先简单解释一下，后面我们通过源码进行详细解释。首先Spring在实例化Bean的时候，会先调用它的构造函数，进行Bean的实例化，然后进行Bean的初始化，Bean的初始化经过三个阶段初始化之前（<strong>applyBeanPostProcessorsBeforeInitialization</strong>），其次是进行初始化（<strong>invokeInitMethods</strong>），最后是初始化之后（<strong>postProcessAfterInitialization</strong>），这就是Bean的初始化过程；然后就开始利用Bean进行业务逻辑处理，最后容器正常关闭，Spring开始销毁Bean，Bean的销毁过程相对比较简单，调用 <strong>DisposableBeanAdapter.destroy()</strong> 方法，该方法中有三个地方比较重要，分别触发Bean的生命周期方法，它们是：<strong>processor.postProcessBeforeDestruction(this.bean, this.beanName);<br>
 ((DisposableBean) bean).destroy();<br>
 invokeCustomDestroyMethod(this.destroyMethod);</strong><br>
 下面我把用图片来进行直观展示：<br>
@@ -364,8 +364,8 @@ protected void invokeInitMethods(String beanName, final Object bean, @Nullable R
 </div>
                               <div class="mdui-divider mdui-m-t-3"></div>
                               <div class="mdui-row-xs-2 mdui-m-t-2">
-  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://bofengsun.github.io//post/yu-ni-xiang-yu-qia-si-na-yi-chang-meng">与你相遇恰似那一场梦</a></div></div>
- <div class="mdui-col"><div class="mdui-text-right "><a href="https://bofengsun.github.io//post/xiang-si-xiang-shou">相思相守</a></div> </div>
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://bofengsun.github.io//post/java-ji-chu-zhi-shi">Java基础知识</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://bofengsun.github.io//post/springboot-tian-jia-bean">SpringBoot 添加Bean</a></div> </div>
                                 </div>
                                 <div class="mdui-divider mdui-m-t-2"></div>
    

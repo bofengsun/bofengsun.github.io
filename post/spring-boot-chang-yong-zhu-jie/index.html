@@ -1,0 +1,418 @@
+<html>
+      <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
+        <meta charset="utf-8">
+        <meta name="referrer" content="never">
+        <title>Spring Boot 常用注解 | 玩命有人疼</title>
+        <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
+        <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://bofengsun.github.io//styles/main.css">
+          <script src="https://bofengsun.github.io//media/scripts/mdui.min.js"></script>
+        <link rel="stylesheet" href="https://at.alicdn.com/t/font_1306644_jwtuc2zzbrd.css">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Ma+Shan+Zheng&display=swap" rel="stylesheet">
+        <script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        <script src="https://bofengsun.github.io//media/scripts/script.js"></script>
+        <script >hljs.initHighlightingOnLoad();</script>
+        
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-151730353-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'UA-151730353-1');
+</script>
+
+    </head>
+    <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
+        <header class="index-img mdui-m-b-3"  style="background-image: url(https://bofengsun.github.io//post-images/spring-boot-chang-yong-zhu-jie.png);" >
+                          <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
+                <ul class="mdui-menu" id="demo-attr-cascade">
+                
+                        <li class="mdui-menu-item">
+                          <a href="/" class="mdui-ripple">首页</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/archives" class="mdui-ripple">归档</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/tags" class="mdui-ripple">标签</a>
+                        </li>
+                
+                        <li class="mdui-menu-item">
+                          <a href="/post/about" class="mdui-ripple">关于</a>
+                        </li>
+                
+                      </ul>
+
+        </header>
+        <div class="mdui-container post">
+                <div class="mdui-row">
+                        <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
+                         <article class="mdui-shadow-10 mdui-p-a-2 post-list">
+                           <div class="mdui-typo-display-1 mdui-m-b-3">Spring Boot 常用注解</div>
+                           <a  class="index-list-biaoqian ">2019-12-08</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>Spring Boot中常用注解：@Configuration、@ComponentScan、@Bean、@Component、@Configuration、@Controller、@Service、@Repository、@RequestMapping、@GetMapping、@PostMapping、@PutMapping、@DeleteMapping、@ResponseBody、@RestController、@PathVariable、@RequestParam</p>
+<h1 id="configuration注解">@Configuration注解</h1>
+<p>@Configuration注解意思是往容器中加入一个组件，该组件的主要作用是进行一些配置，相当于之前配置的配置文件，下面我们用两种方式对其进行演示：<br>
+<strong>准备工作</strong><br>
+pom.xml</p>
+<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;project xmlns=&quot;http://maven.apache.org/POM/4.0.0&quot;
+         xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+         xsi:schemaLocation=&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&quot;&gt;
+    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+    &lt;groupId&gt;com.itbofeng&lt;/groupId&gt;
+    &lt;artifactId&gt;SpringDemo&lt;/artifactId&gt;
+    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+    &lt;dependencies&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-context&lt;/artifactId&gt;
+            &lt;version&gt;5.0.7.RELEASE&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;junit&lt;/groupId&gt;
+            &lt;artifactId&gt;junit&lt;/artifactId&gt;
+            &lt;version&gt;4.12&lt;/version&gt;
+            &lt;scope&gt;test&lt;/scope&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+&lt;/project&gt;
+</code></pre>
+<p><strong>配置文件方式</strong><br>
+1、创建类路径配置文件beans.xml<br>
+2、创建User类</p>
+<pre><code>package com.itbofeng.bean;
+/**
+ * 描述：User Bean 用来测试
+ */
+public class User {
+    private String name;
+    private Integer age;
+    public User() {
+    }
+    public User(String name, Integer age) {
+        this.name = name;
+        this.age = age;
+    }
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+    public Integer getAge() {
+        return age;
+    }
+    public void setAge(Integer age) {
+        this.age = age;
+    }
+    @Override
+    public String toString() {
+        return &quot;User{&quot; +
+                &quot;name='&quot; + name + '\'' +
+                &quot;, age=&quot; + age +
+                '}';
+    }
+}
+</code></pre>
+<p>2、在配置文件中加入User bean</p>
+<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+       xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+       xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd&quot;&gt;
+    &lt;bean id=&quot;user&quot; class=&quot;com.itbofeng.bean.User&quot;&gt;
+        &lt;property name=&quot;name&quot; value=&quot;zhangsan&quot;&gt;&lt;/property&gt;
+        &lt;property name=&quot;age&quot; value=&quot;13&quot;&gt;&lt;/property&gt;
+    &lt;/bean&gt;
+&lt;/beans&gt;
+</code></pre>
+<p>3、运行测试</p>
+<pre><code>import com.itbofeng.bean.User;
+import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+/**
+ * 描述：测试类
+ */
+public class MainConfigTest {
+    @Test
+    public void testXml(){
+        //通过配置文件创建容器，需要传入配置文件
+        ApplicationContext applicationContext=new ClassPathXmlApplicationContext(&quot;beans.xml&quot;);
+        //获取bean
+        User user= (User) applicationContext.getBean(&quot;user&quot;);
+        System.out.println(user);
+    }
+}
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/8069900-63f532462b51fd2f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="运行结果"><br>
+<strong>注解方式</strong><br>
+1、创建配置类MainConfig.java<br>
+2、注册组件用@Bean注解<br>
+我们看一下代码</p>
+<pre><code>package com.itbofeng;
+
+import com.itbofeng.bean.User;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * 描述：该类对@Configuration注解进行讲解
+ */
+@Configuration
+public class MainConfig {
+    /**
+     * 给容器中加入Bean，相当于配置文件总的bena标签
+     * id 默认是方法名称，也可以指定id
+     * class 即返回值类型
+     */
+    @Bean
+    public User user(){
+        return new User(&quot;lisi&quot;,18);
+    }
+}
+</code></pre>
+<p>以上配置类就等同于beans.xml中的内容<br>
+3、运行测试</p>
+<pre><code>    @Test
+    public void testAnnoation(){
+        //通过注解创建容器，需要传入配置类
+        ApplicationContext applicationContext=new AnnotationConfigApplicationContext(MainConfig.class);
+        //获取bean
+        User user= (User) applicationContext.getBean(&quot;user&quot;);
+        System.out.println(user);
+    }
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/8069900-2cc400ec1dd6c52e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="运行结果"><br>
+有了该例子相信大家对@Configuration有了一个基本的认识，其就相当于Spring配置文件的功能，不过是以注解的方式进行体现，之前我们在配置文件中多采用包扫描的方式进行，那么这种方式在配置类中如何体现呢，下面我们引入第二个注解@ComponentScan包扫描注解<br>
+####@ComponentScan注解<br>
+@ComponentScan注解就相当于 xml配置文件中的context:component-scan标签，下面讲解一下他的基本使用方法：<br>
+xml</p>
+<pre><code>&lt;context:component-scan base-package=&quot;com.itbofeng&quot;&gt;&lt;/context:component-scan&gt;
+</code></pre>
+<p>java</p>
+<pre><code>@Configuration
+@ComponentScan(&quot;com.itbofeng&quot;)
+public class MainConfig {
+  //...
+}
+</code></pre>
+<p>这样就可以对com.itbofeng包下的@Controller、@Service、@Component、@Respoitory、@Component标注的类进行扫描，并由Spring容器进行管理，当然spring并不是这么简单的，它还可以进行排除，仅包含，我们看一下xml和java的语法<br>
+xml</p>
+<pre><code>    &lt;!--包扫描、如果想要include-filter起作用需要设置use-default-filters=&quot;false&quot;,禁用默认过滤规则--&gt;
+    &lt;context:component-scan base-package=&quot;com.itbofeng&quot; use-default-filters=&quot;false&quot;&gt;
+        &lt;!--排除--&gt;
+        &lt;context:exclude-filter type=&quot;annotation&quot; expression=&quot;org.springframework.stereotype.Controller&quot;&gt;&lt;/context:exclude-filter&gt;
+        &lt;!--仅包括--&gt;
+        &lt;context:include-filter type=&quot;annotation&quot; expression=&quot;org.springframework.stereotype.Service&quot;&gt;&lt;/context:include-filter&gt;
+    &lt;/context:component-scan&gt;
+</code></pre>
+<p>java</p>
+<pre><code>@Configuration
+@ComponentScan(value = &quot;com.itbofeng&quot;,excludeFilters = {
+        @ComponentScan.Filter(type = FilterType.ANNOTATION,classes = {Controller.class})
+},
+includeFilters = {
+        @ComponentScan.Filter(type = FilterType.ANNOTATION,classes = {Service.class})
+},useDefaultFilters = false)
+public class MainConfig {
+  //...
+}
+</code></pre>
+<p>对于jdk1.8及以上@ComponentScan支持重复注解，另外还有@ComponentScans注解可以写多个@ComponentScan注解，另外需要说明的两种过滤方式排除和仅包含在一个包扫描中仅可出现一个。<br>
+关于@ComponentScan.Filter.type的取值大家可以参考：https://www.cnblogs.com/kevin-yuan/p/5068448.html<br>
+我们之前看到过@Bean注解，但并未对该注解进行详细介绍<br>
+<strong>@Bean</strong><br>
+前面我们初步体验了一下@bean注解的作用也很简单常用来标注在方法上面，来表示往spring容器中添加一个组件如上面的利用@Bean往容器中添加一个User组件，在xml中我们不仅能够往容器中添加一个bean而且还能设置lazy-init、scope的属性，这些属性在注解里面可以这样使用</p>
+<pre><code>    @Lazy
+    @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
+    @Bean
+    public User user(){
+        return new User(&quot;lisi&quot;,18);
+    }
+</code></pre>
+<p>等同于</p>
+<pre><code>&lt;bean id=&quot;user&quot; class=&quot;com.itbofeng.bean.User&quot; scope=&quot;singleton&quot; lazy-init=&quot;true&quot;&gt;
+        &lt;property name=&quot;name&quot; value=&quot;zhangsan&quot;&gt;&lt;/property&gt;
+        &lt;property name=&quot;age&quot; value=&quot;13&quot;&gt;&lt;/property&gt;
+&lt;/bean&gt;
+</code></pre>
+<p><strong>@Component、@Configuration、@Controller、@Service、@Repository</strong><br>
+其实在web开发中我们最常用的组件是@Component、@Configuration、@Controller、@Service、@Repository这几个注解都有一个作用，往容器中添加一个组件他们都是@Component组合注解，他们标注在类上面，表示往spring容器中添加一个组件，@Controller用来标注在Controller上面，@Service用来标注Service层上面，@Repository用来标注在持久层上面，@Configuration用来标注在配置类上，@Component用来标注在其他组件上面。<br>
+<strong>@RequestMapping、@GetMapping、@PostMapping、@PutMapping、@DeleteMapping</strong><br>
+在SpringMVC中还有个重要的注解@RequestMapping，它是用来做地址映射的，就是说，我们一个请求，该如何映射到我们的方法上面。它可用于类或方法上，用于类上，表示类中的所有响应请求的方法都是以该地址作为父路径。RequestMapping注解有六个属性，其中常用的有<strong>value， method</strong>、非常用的有params，headers、consumes，produces，**value：指定请求的实际地址，method：  指定请求的method类型， GET、POST、PUT、DELETE等（符合Rest风格）；params： 指定request中必须包含某些参数值是，才让该方法处理。headers： 指定request中必须包含某些指定的header值，才能让该方法处理请求。**consumes： 指定处理请求的提交内容类型（Content-Type），例如application/json, text/html;produces: 指定返回的内容类型，仅当request请求头中的(Accept)类型中包含该指定类型才返回，例子：</p>
+<pre><code>package com.itbofeng.controller;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+@Controller
+public class UserController {
+    @RequestMapping(value = &quot;/hello&quot;,method = RequestMethod.GET)
+    public String hello(){
+        return &quot;hello&quot;;
+    }
+}
+</code></pre>
+<p><strong>@ResponseBody</strong><br>
+如果我们配置了视图解析器ViewResolver，如果我们访问 localhost:8080/hello还并不能够返回hello，其会返回视图解析器的前缀+hello+后缀的页面，如果我们想要其向浏览器返回hello内容，则需要@ResponseBody注解，该注解就是将返回值直接返回给浏览器，如果返回值是一个对象，则会返回该对象的json对象，其可以标注在方法上表示该方法返回遵守该规则，也可以标注在类上，表示该类下的所有方法都遵守该规则。用法如下：</p>
+<pre><code>    @ResponseBody
+    @RequestMapping(value = &quot;/hello&quot;,method = RequestMethod.GET)
+    public String hello(){
+        return &quot;hello&quot;;
+    }
+</code></pre>
+<p><strong>@RestController</strong><br>
+@RestController=@Controller+@ResponseBody<br>
+<strong>@PathVariable、@RequestParam</strong><br>
+@PathVariable 路径变量，主要是将路径中的值映射为变量（Rest编程风格推荐），<br>
+@RequestParam 请求参数，主要是获取请求中的参数<br>
+下面我们举例说明：<br>
+地址① http://localhost:8080/hello?name=lisi<br>
+地址② http://localhost:8080/hello/lisi<br>
+我们通过两种方式来获取变量请求中的lisi，<br>
+@RequestParam 方式</p>
+<pre><code>    @ResponseBody
+    @RequestMapping(value = &quot;/hello&quot;,method = RequestMethod.GET)
+    public String hello(@RequestParam(&quot;name&quot;) String name){
+        return &quot;hello &quot;+name;
+    }
+</code></pre>
+<p>@PathVariable 方式</p>
+<pre><code>    @ResponseBody
+    @RequestMapping(value = &quot;/hello/{name}&quot;,method = RequestMethod.GET)
+    public String hello(@PathVariable(&quot;name&quot;) String name){
+        return &quot;hello &quot;+name;
+    }
+</code></pre>
+<p><strong>注意：请求路径的变化</strong><br>
+今天注解部分就先将到这里，后面我们在学习过程中学到什么，再具体讲解其用法，关于这些注解的在什么时候起作用的呢，需要我们学习了Spring的运行流程之后，才能进一步的进行深入了解，下一节，我们学习一下往容器中添加Bean的几种方式。</p>
+</div>
+                              <div class="mdui-divider mdui-m-t-3"></div>
+                              <div class="mdui-row-xs-2 mdui-m-t-2">
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://bofengsun.github.io//post/zhu-jie-ji-ben-zhi-shi">注解基本知识</a></div></div>
+ <div class="mdui-col"><div class="mdui-text-right "><a href="https://bofengsun.github.io//post/yu-ni-xiang-yu-qia-si-na-yi-chang-meng">与你相遇恰似那一场梦</a></div> </div>
+                                </div>
+                                <div class="mdui-divider mdui-m-t-2"></div>
+   
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: '225619cd1fd2fb548ab9',
+    clientSecret: '761b00969ec5fbf4d3906d1872e6b45bd2079e53',
+    repo: 'bofengsun.github.io',
+    owner: 'bofengsun',
+    admin: ['bofengsun'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+ <script src="https://bofengsun.github.io//media/scripts/Valine.min.js"></script>
+ <div class="comment"></div>
+
+<script>
+      new Valine({
+            el: '.comment',
+
+
+
+            path: window.location.pathname,
+            pageSize: 30,
+            avatar:'mm', 
+       })
+
+    </script> 
+<script>
+    if(window.location.hash){
+        var checkExist = setInterval(function() {
+           if ($(window.location.hash).length) {
+              $('html, body').animate({scrollTop: $(window.location.hash).offset().top-90}, 1000);
+              clearInterval(checkExist);
+           }
+        }, 100);
+    }
+</script>
+                         </article>
+                 <!-- <div class="toc-container mdui-float-right">
+                <ul class="markdownIt-TOC">
+<li><a href="#configuration%E6%B3%A8%E8%A7%A3">@Configuration注解</a></li>
+</ul>
+
+              </div> -->
+
+                        </div>
+                 </div>
+          
+        </div>
+        <script data-no-instant>
+    (function ($) {
+        $.extend({
+            adamsOverload: function () {
+                $.viewImage({
+                    'target'  : '.post-neirong img',
+                    'exclude' : '.vsmile-icons img , .song-links-item img',
+                    'delay'   : 300
+                });
+            }
+        });
+    })(jQuery);
+    jQuery.adamsOverload();
+</script>
+        <footer class="footer mdui-m-t-5 mdui-text-center">
+               <nav class="social-links">
+                      <ul>
+                      
+                            
+                           
+                            
+                           
+                            	
+                        <li class="social-link"><a href="https://github.com/bofengsun" target="_blank"><i class="iconfont icon-github"></i></a></li>
+                         
+                           
+                            	
+                        <li class="social-link"><a href="https://www.zhihu.com/people/wan-ming-you-ren-teng/activities" target="_blank"><i class="iconfont icon-zhihu"></i></a></li>
+                         
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                            
+                           
+                      </ul>
+                    </nav>
+                  <div class="copyright">
+                      <p>Powered by <a href="https://github.com/bofengsun" target="_blank">BOFENGSUN</a></p>
+                  </div>
+              </footer>
+    </body>
+</html>

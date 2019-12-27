@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://bofengsun.github.io/</id>
     <title>玩命有人疼</title>
-    <updated>2019-12-25T06:50:15.604Z</updated>
+    <updated>2019-12-27T09:02:43.724Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://bofengsun.github.io/"/>
     <link rel="self" href="https://bofengsun.github.io//atom.xml"/>
@@ -11,11 +11,507 @@
     <icon>https://bofengsun.github.io//favicon.ico</icon>
     <rights>All rights reserved 2019, 玩命有人疼</rights>
     <entry>
+        <title type="html"><![CDATA[注解基本知识]]></title>
+        <id>https://bofengsun.github.io//post/zhu-jie-ji-ben-zhi-shi</id>
+        <link href="https://bofengsun.github.io//post/zhu-jie-ji-ben-zhi-shi">
+        </link>
+        <updated>2019-12-11T08:55:46.000Z</updated>
+        <content type="html"><![CDATA[<p>注解：在SpringBoot中存在大量的注解，我们需要对注解有一个基本的认识以及应用，主要包括这几个方面：注解的分类、注解的语法、注解的使用、注解解析</p>
+<h1 id="注解">注解</h1>
+<p>我对注解的理解是，注解就是一种标记，通过这个标记我们可以获取一定的关联信息。</p>
+<h1 id="为什么要学习注解">为什么要学习注解</h1>
+<p>在这里主要是现有的框架中存在大量的注解，我们需要知道主键的基本概念以及使用方法，能够更加理解这些框架，另一方面，学习注解，我们可以开发自定义注解使得代码更加简洁清晰。</p>
+<h1 id="注解的分类">注解的分类</h1>
+<h3 id="1-按照声明周期">1、按照声明周期</h3>
+<p>源码注解（仅在.java文件中存在，经过编译就不存在了）<br>
+编译时注解（在编译时起作用，即在.class文件中也仍然存在）<br>
+运行时注解（在运行阶段起作用，有时会影响程序的运行逻辑）</p>
+<h3 id="2-按照来源">2、按照来源</h3>
+<p>JDK自带的注解<br>
+第三方框架注解<br>
+自定义注解</p>
+<h3 id="3-元注解对注解进行注解的注解">3、元注解（对注解进行注解的注解）</h3>
+<h2 id="注解的语法">注解的语法</h2>
+<p>我们首先看一下@SpringBootApplication注解，这是SpringBoot HelloWorld程序中的主类的主键，我们看一下他的源码</p>
+<pre><code>package org.springframework.boot.autoconfigure;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.context.TypeExcludeFilter;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.core.annotation.AliasFor;
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+@SpringBootConfiguration
+@EnableAutoConfiguration
+@ComponentScan(excludeFilters = {
+		@Filter(type = FilterType.CUSTOM, classes = TypeExcludeFilter.class),
+		@Filter(type = FilterType.CUSTOM, classes = AutoConfigurationExcludeFilter.class) })
+public @interface SpringBootApplication {
+    //...
+}
+</code></pre>
+<p>我们通过该主键就可以帮我们自动配置好SpringBoot应用程序，通过包名我们可以看到@SpringBootConfiguration、@EnableAutoConfiguration、@ComponentScan这三个注解也是属于Spring自己的注解，所以@SpringBootApplication注解是一个组合注解，去除这些组合信息，以及不必要的代码，我们再来看一下该注解：</p>
+<pre><code>@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+public @interface SpringBootApplication {
+    //...
+}
+</code></pre>
+<p>这就是一个注解的基本框架，首先我们知道，定义一个主键的关键字是@interface，另外我们还看到有@Target、@Retention、@Documented、@Inherited四个注解就是标注在注解上的注解即元注解，下面我们对这四个注解进行详细的讲解：<br>
+<strong>@Target</strong>：注解的作用目标，即<strong>作用域</strong>。<br>
+可以看到它的取值是一个枚举类型，我们看一下该枚举源码：</p>
+<pre><code>public enum ElementType {
+    /**Class, interface (including annotation type), or enum declaration*/
+    /** 类，接口   重要*/
+    TYPE,
+    
+    /** Field declaration (includes enum constants) */
+    /** 字段声明  重要*/
+    FIELD,
+
+    /** Method declaration */
+     /** 方法声明  重要*/
+    METHOD,
+
+    /** Formal parameter declaration */
+    /** 参数声明  重要*/
+    PARAMETER,
+
+    /** Constructor declaration */
+    /** 构造函数声明  重要*/
+    CONSTRUCTOR,
+
+    /** Local variable declaration */
+    /** 构局部变量声明*/
+    LOCAL_VARIABLE,
+
+    /** Annotation type declaration */
+    /** 注解类型声明*/
+    ANNOTATION_TYPE,
+
+    /** Package declaration*/
+    /** 包声明*/
+    PACKAGE,
+
+    /**
+     * Type parameter declaration
+     *
+     * @since 1.8
+     */
+    TYPE_PARAMETER,
+
+    /**
+     * Use of a type
+     *
+     * @since 1.8
+     */
+    TYPE_USE
+}
+</code></pre>
+<p>注解的作用域可以来自这些值</p>
+<pre><code>@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.ANNOTATION_TYPE)
+public @interface Target {
+    /**
+     * Returns an array of the kinds of elements an annotation type
+     * can be applied to.
+     * @return an array of the kinds of elements an annotation type
+     * can be applied to
+     */
+    ElementType[] value();
+}
+</code></pre>
+<p>通过查看@Target的源码可以知道，其取值是一个ElementType[]数组所以，其值也可以是ElementType中的组合例如</p>
+<pre><code>@Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface Bean {
+  //...
+}
+</code></pre>
+<p>Spring中的@Bean注解的作用域就是可以是在方法声明中或者注解类型声明中。<br>
+<strong>@Retention</strong>：表示注解的声明周期，即可以是源码阶段、编译时、运行时，我们可以看一下RetentionPolicy枚举的源码</p>
+<pre><code>public enum RetentionPolicy {
+    /**
+     * Annotations are to be discarded by the compiler. 
+     * 源码阶段
+     */
+    SOURCE,
+
+    /**
+     * Annotations are to be recorded in the class file by the compiler
+     * but need not be retained by the VM at run time.  This is the default
+     * behavior.
+     * 编译时阶段
+     */
+    CLASS,
+
+    /**
+     * Annotations are to be recorded in the class file by the compiler and
+     * retained by the VM at run time, so they may be read reflectively.
+     * 运行时阶段
+     * @see java.lang.reflect.AnnotatedElement
+     */
+    RUNTIME
+}
+</code></pre>
+<p><strong>@Documented</strong>：标识在生成javadoc文档时包含该注解信息<br>
+<strong>@Inherited</strong>:标识允许子类继承<br>
+<strong>注解的成员</strong>：注解的成员以无参无异常的方法进行声明，可以指定默认值，成员的类型包括基本数据类型以及String、Class、Annotation、Enumeration<br>
+##注解的使用<br>
+@&lt;注解名&gt;（&lt;成员1&gt;=&lt;成员1值&gt;，&lt;成员2&gt;=&lt;成员2值&gt;，...）<br>
+##注解解析<br>
+注解解析主要是利用反射进行解析的下面我们看一个简单的例子</p>
+<pre><code>package com.example.demo.annotation;
+
+import java.lang.annotation.*;
+/**
+ * 描述：@Description用来对类或者方法进行注释说明的注解
+ */
+@Target({ElementType.TYPE,ElementType.METHOD})//作用域：类、方法
+@Retention(RetentionPolicy.RUNTIME)//生命周期  运行时
+@Inherited//允许继承
+@Documented//生成javadoc描述符
+public @interface Description {
+    String value();
+}
+</code></pre>
+<pre><code>package com.example.demo.annotation;
+
+/**
+ * 描述：普通类，用来使用@Description注解
+ */
+@Description(&quot;用户类&quot;)
+public class User {
+
+    private String username;
+
+    private String password;
+
+    @Description(&quot;用户名&quot;)
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+    @Description(&quot;密码&quot;)
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+}
+</code></pre>
+<pre><code>package com.example.demo.annotation;
+
+import java.lang.reflect.Method;
+
+/**
+ * 描述：解析注解
+ */
+public class ParseAnnotation {
+
+    public static void main(String[] args) throws ClassNotFoundException {
+        //利用反射获取类信息
+        Class c=Class.forName(&quot;com.example.demo.annotation.User&quot;);
+        //判断是否为@Description注解标注的类
+        boolean isDescriptionAnnotationClass=c.isAnnotationPresent(Description.class);
+        if(isDescriptionAnnotationClass){
+            //如果是获取注解信息
+            Description description= (Description) c.getAnnotation(Description.class);
+            //输出
+            System.out.println(description.value());
+        }
+        //利用反射获取所有方法信息
+        Method [] ms=c.getMethods();
+        for (Method m:ms){
+            //判断是否为@Description注解标注的方法
+            boolean isDescriptionAnnotationMethod=m.isAnnotationPresent(Description.class);
+            if(isDescriptionAnnotationMethod){
+                //如果是获取注解信息
+                Description description= (Description) m.getAnnotation(Description.class);
+                //输出
+                System.out.println(description.value());
+            }
+        }
+    }
+}
+</code></pre>
+<p>运行结果：<br>
+<img src="https://upload-images.jianshu.io/upload_images/8069900-bac4addc5cc531d6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="注解.png"></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Spring Boot 常用注解]]></title>
+        <id>https://bofengsun.github.io//post/spring-boot-chang-yong-zhu-jie</id>
+        <link href="https://bofengsun.github.io//post/spring-boot-chang-yong-zhu-jie">
+        </link>
+        <updated>2019-12-08T08:46:26.000Z</updated>
+        <content type="html"><![CDATA[<p>Spring Boot中常用注解：@Configuration、@ComponentScan、@Bean、@Component、@Configuration、@Controller、@Service、@Repository、@RequestMapping、@GetMapping、@PostMapping、@PutMapping、@DeleteMapping、@ResponseBody、@RestController、@PathVariable、@RequestParam</p>
+<h1 id="configuration注解">@Configuration注解</h1>
+<p>@Configuration注解意思是往容器中加入一个组件，该组件的主要作用是进行一些配置，相当于之前配置的配置文件，下面我们用两种方式对其进行演示：<br>
+<strong>准备工作</strong><br>
+pom.xml</p>
+<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;project xmlns=&quot;http://maven.apache.org/POM/4.0.0&quot;
+         xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+         xsi:schemaLocation=&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&quot;&gt;
+    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+    &lt;groupId&gt;com.itbofeng&lt;/groupId&gt;
+    &lt;artifactId&gt;SpringDemo&lt;/artifactId&gt;
+    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+    &lt;dependencies&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-context&lt;/artifactId&gt;
+            &lt;version&gt;5.0.7.RELEASE&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;junit&lt;/groupId&gt;
+            &lt;artifactId&gt;junit&lt;/artifactId&gt;
+            &lt;version&gt;4.12&lt;/version&gt;
+            &lt;scope&gt;test&lt;/scope&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+&lt;/project&gt;
+</code></pre>
+<p><strong>配置文件方式</strong><br>
+1、创建类路径配置文件beans.xml<br>
+2、创建User类</p>
+<pre><code>package com.itbofeng.bean;
+/**
+ * 描述：User Bean 用来测试
+ */
+public class User {
+    private String name;
+    private Integer age;
+    public User() {
+    }
+    public User(String name, Integer age) {
+        this.name = name;
+        this.age = age;
+    }
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+    public Integer getAge() {
+        return age;
+    }
+    public void setAge(Integer age) {
+        this.age = age;
+    }
+    @Override
+    public String toString() {
+        return &quot;User{&quot; +
+                &quot;name='&quot; + name + '\'' +
+                &quot;, age=&quot; + age +
+                '}';
+    }
+}
+</code></pre>
+<p>2、在配置文件中加入User bean</p>
+<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+       xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+       xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd&quot;&gt;
+    &lt;bean id=&quot;user&quot; class=&quot;com.itbofeng.bean.User&quot;&gt;
+        &lt;property name=&quot;name&quot; value=&quot;zhangsan&quot;&gt;&lt;/property&gt;
+        &lt;property name=&quot;age&quot; value=&quot;13&quot;&gt;&lt;/property&gt;
+    &lt;/bean&gt;
+&lt;/beans&gt;
+</code></pre>
+<p>3、运行测试</p>
+<pre><code>import com.itbofeng.bean.User;
+import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+/**
+ * 描述：测试类
+ */
+public class MainConfigTest {
+    @Test
+    public void testXml(){
+        //通过配置文件创建容器，需要传入配置文件
+        ApplicationContext applicationContext=new ClassPathXmlApplicationContext(&quot;beans.xml&quot;);
+        //获取bean
+        User user= (User) applicationContext.getBean(&quot;user&quot;);
+        System.out.println(user);
+    }
+}
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/8069900-63f532462b51fd2f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="运行结果"><br>
+<strong>注解方式</strong><br>
+1、创建配置类MainConfig.java<br>
+2、注册组件用@Bean注解<br>
+我们看一下代码</p>
+<pre><code>package com.itbofeng;
+
+import com.itbofeng.bean.User;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * 描述：该类对@Configuration注解进行讲解
+ */
+@Configuration
+public class MainConfig {
+    /**
+     * 给容器中加入Bean，相当于配置文件总的bena标签
+     * id 默认是方法名称，也可以指定id
+     * class 即返回值类型
+     */
+    @Bean
+    public User user(){
+        return new User(&quot;lisi&quot;,18);
+    }
+}
+</code></pre>
+<p>以上配置类就等同于beans.xml中的内容<br>
+3、运行测试</p>
+<pre><code>    @Test
+    public void testAnnoation(){
+        //通过注解创建容器，需要传入配置类
+        ApplicationContext applicationContext=new AnnotationConfigApplicationContext(MainConfig.class);
+        //获取bean
+        User user= (User) applicationContext.getBean(&quot;user&quot;);
+        System.out.println(user);
+    }
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/8069900-2cc400ec1dd6c52e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="运行结果"><br>
+有了该例子相信大家对@Configuration有了一个基本的认识，其就相当于Spring配置文件的功能，不过是以注解的方式进行体现，之前我们在配置文件中多采用包扫描的方式进行，那么这种方式在配置类中如何体现呢，下面我们引入第二个注解@ComponentScan包扫描注解<br>
+####@ComponentScan注解<br>
+@ComponentScan注解就相当于 xml配置文件中的context:component-scan标签，下面讲解一下他的基本使用方法：<br>
+xml</p>
+<pre><code>&lt;context:component-scan base-package=&quot;com.itbofeng&quot;&gt;&lt;/context:component-scan&gt;
+</code></pre>
+<p>java</p>
+<pre><code>@Configuration
+@ComponentScan(&quot;com.itbofeng&quot;)
+public class MainConfig {
+  //...
+}
+</code></pre>
+<p>这样就可以对com.itbofeng包下的@Controller、@Service、@Component、@Respoitory、@Component标注的类进行扫描，并由Spring容器进行管理，当然spring并不是这么简单的，它还可以进行排除，仅包含，我们看一下xml和java的语法<br>
+xml</p>
+<pre><code>    &lt;!--包扫描、如果想要include-filter起作用需要设置use-default-filters=&quot;false&quot;,禁用默认过滤规则--&gt;
+    &lt;context:component-scan base-package=&quot;com.itbofeng&quot; use-default-filters=&quot;false&quot;&gt;
+        &lt;!--排除--&gt;
+        &lt;context:exclude-filter type=&quot;annotation&quot; expression=&quot;org.springframework.stereotype.Controller&quot;&gt;&lt;/context:exclude-filter&gt;
+        &lt;!--仅包括--&gt;
+        &lt;context:include-filter type=&quot;annotation&quot; expression=&quot;org.springframework.stereotype.Service&quot;&gt;&lt;/context:include-filter&gt;
+    &lt;/context:component-scan&gt;
+</code></pre>
+<p>java</p>
+<pre><code>@Configuration
+@ComponentScan(value = &quot;com.itbofeng&quot;,excludeFilters = {
+        @ComponentScan.Filter(type = FilterType.ANNOTATION,classes = {Controller.class})
+},
+includeFilters = {
+        @ComponentScan.Filter(type = FilterType.ANNOTATION,classes = {Service.class})
+},useDefaultFilters = false)
+public class MainConfig {
+  //...
+}
+</code></pre>
+<p>对于jdk1.8及以上@ComponentScan支持重复注解，另外还有@ComponentScans注解可以写多个@ComponentScan注解，另外需要说明的两种过滤方式排除和仅包含在一个包扫描中仅可出现一个。<br>
+关于@ComponentScan.Filter.type的取值大家可以参考：https://www.cnblogs.com/kevin-yuan/p/5068448.html<br>
+我们之前看到过@Bean注解，但并未对该注解进行详细介绍<br>
+<strong>@Bean</strong><br>
+前面我们初步体验了一下@bean注解的作用也很简单常用来标注在方法上面，来表示往spring容器中添加一个组件如上面的利用@Bean往容器中添加一个User组件，在xml中我们不仅能够往容器中添加一个bean而且还能设置lazy-init、scope的属性，这些属性在注解里面可以这样使用</p>
+<pre><code>    @Lazy
+    @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
+    @Bean
+    public User user(){
+        return new User(&quot;lisi&quot;,18);
+    }
+</code></pre>
+<p>等同于</p>
+<pre><code>&lt;bean id=&quot;user&quot; class=&quot;com.itbofeng.bean.User&quot; scope=&quot;singleton&quot; lazy-init=&quot;true&quot;&gt;
+        &lt;property name=&quot;name&quot; value=&quot;zhangsan&quot;&gt;&lt;/property&gt;
+        &lt;property name=&quot;age&quot; value=&quot;13&quot;&gt;&lt;/property&gt;
+&lt;/bean&gt;
+</code></pre>
+<p><strong>@Component、@Configuration、@Controller、@Service、@Repository</strong><br>
+其实在web开发中我们最常用的组件是@Component、@Configuration、@Controller、@Service、@Repository这几个注解都有一个作用，往容器中添加一个组件他们都是@Component组合注解，他们标注在类上面，表示往spring容器中添加一个组件，@Controller用来标注在Controller上面，@Service用来标注Service层上面，@Repository用来标注在持久层上面，@Configuration用来标注在配置类上，@Component用来标注在其他组件上面。<br>
+<strong>@RequestMapping、@GetMapping、@PostMapping、@PutMapping、@DeleteMapping</strong><br>
+在SpringMVC中还有个重要的注解@RequestMapping，它是用来做地址映射的，就是说，我们一个请求，该如何映射到我们的方法上面。它可用于类或方法上，用于类上，表示类中的所有响应请求的方法都是以该地址作为父路径。RequestMapping注解有六个属性，其中常用的有<strong>value， method</strong>、非常用的有params，headers、consumes，produces，**value：指定请求的实际地址，method：  指定请求的method类型， GET、POST、PUT、DELETE等（符合Rest风格）；params： 指定request中必须包含某些参数值是，才让该方法处理。headers： 指定request中必须包含某些指定的header值，才能让该方法处理请求。**consumes： 指定处理请求的提交内容类型（Content-Type），例如application/json, text/html;produces: 指定返回的内容类型，仅当request请求头中的(Accept)类型中包含该指定类型才返回，例子：</p>
+<pre><code>package com.itbofeng.controller;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+@Controller
+public class UserController {
+    @RequestMapping(value = &quot;/hello&quot;,method = RequestMethod.GET)
+    public String hello(){
+        return &quot;hello&quot;;
+    }
+}
+</code></pre>
+<p><strong>@ResponseBody</strong><br>
+如果我们配置了视图解析器ViewResolver，如果我们访问 localhost:8080/hello还并不能够返回hello，其会返回视图解析器的前缀+hello+后缀的页面，如果我们想要其向浏览器返回hello内容，则需要@ResponseBody注解，该注解就是将返回值直接返回给浏览器，如果返回值是一个对象，则会返回该对象的json对象，其可以标注在方法上表示该方法返回遵守该规则，也可以标注在类上，表示该类下的所有方法都遵守该规则。用法如下：</p>
+<pre><code>    @ResponseBody
+    @RequestMapping(value = &quot;/hello&quot;,method = RequestMethod.GET)
+    public String hello(){
+        return &quot;hello&quot;;
+    }
+</code></pre>
+<p><strong>@RestController</strong><br>
+@RestController=@Controller+@ResponseBody<br>
+<strong>@PathVariable、@RequestParam</strong><br>
+@PathVariable 路径变量，主要是将路径中的值映射为变量（Rest编程风格推荐），<br>
+@RequestParam 请求参数，主要是获取请求中的参数<br>
+下面我们举例说明：<br>
+地址① http://localhost:8080/hello?name=lisi<br>
+地址② http://localhost:8080/hello/lisi<br>
+我们通过两种方式来获取变量请求中的lisi，<br>
+@RequestParam 方式</p>
+<pre><code>    @ResponseBody
+    @RequestMapping(value = &quot;/hello&quot;,method = RequestMethod.GET)
+    public String hello(@RequestParam(&quot;name&quot;) String name){
+        return &quot;hello &quot;+name;
+    }
+</code></pre>
+<p>@PathVariable 方式</p>
+<pre><code>    @ResponseBody
+    @RequestMapping(value = &quot;/hello/{name}&quot;,method = RequestMethod.GET)
+    public String hello(@PathVariable(&quot;name&quot;) String name){
+        return &quot;hello &quot;+name;
+    }
+</code></pre>
+<p><strong>注意：请求路径的变化</strong><br>
+今天注解部分就先将到这里，后面我们在学习过程中学到什么，再具体讲解其用法，关于这些注解的在什么时候起作用的呢，需要我们学习了Spring的运行流程之后，才能进一步的进行深入了解，下一节，我们学习一下往容器中添加Bean的几种方式。</p>
+]]></content>
+    </entry>
+    <entry>
         <title type="html"><![CDATA[与你相遇恰似那一场梦]]></title>
         <id>https://bofengsun.github.io//post/yu-ni-xiang-yu-qia-si-na-yi-chang-meng</id>
         <link href="https://bofengsun.github.io//post/yu-ni-xiang-yu-qia-si-na-yi-chang-meng">
         </link>
-        <updated>2019-12-25T06:30:19.000Z</updated>
+        <updated>2019-12-04T06:30:19.000Z</updated>
         <summary type="html"><![CDATA[<p>我走在乡间的小路<br>
 想起了往事篇篇<br>
 你看</p>
@@ -38,328 +534,11 @@
 ]]></content>
     </entry>
     <entry>
-        <title type="html"><![CDATA[Spring Bean生命周期]]></title>
-        <id>https://bofengsun.github.io//post/spring-bean-sheng-ming-zhou-qi</id>
-        <link href="https://bofengsun.github.io//post/spring-bean-sheng-ming-zhou-qi">
-        </link>
-        <updated>2019-12-25T01:19:55.000Z</updated>
-        <summary type="html"><![CDATA[<p>Spring Boot Bean的生命周期，什么是Bean的生命周期，就是Bean从创建到销毁的过程。下面我们就看一看SpringBean的生命历程吧！</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>Spring Boot Bean的生命周期，什么是Bean的生命周期，就是Bean从创建到销毁的过程。下面我们就看一看SpringBean的生命历程吧！</p>
-<!-- more -->
-<h1 id="bean的生命周期过程描述">Bean的生命周期过程描述</h1>
-<p>我们先看一下Bean的生命周期过程中都会经历些什么，我先简单解释一下，后面我们通过源码进行详细解释。首先Spring在实例化Bean的时候，会先调用它的构造函数，进行Bean的实例化，然后进行Bean的初始化，Bean的初始化经过三个阶段初始化之前（<strong>applyBeanPostProcessorsBeforeInitialization</strong>），其次是进行初始化（<strong>invokeInitMethods</strong>），最后是初始化之后（<strong>postProcessAfterInitialization</strong>），这就是Bean的初始化过程；然后就开始利用Bean进行业务逻辑处理，最后容器正常关闭，Spring开始销毁Bean，Bean的销毁过程相对比较简单，调用**DisposableBeanAdapter.destroy()**方法，该方法中有三个地方比较重要，分别触发Bean的生命周期方法，它们是：<strong>processor.postProcessBeforeDestruction(this.bean, this.beanName);<br>
-((DisposableBean) bean).destroy();<br>
-invokeCustomDestroyMethod(this.destroyMethod);</strong><br>
-下面我把用图片来进行直观展示：<br>
-<img src="https://bofengsun.github.io//post-images/1577242534383.png" alt="Bean的生命周期.png"></p>
-<h1 id="实例运行">实例运行</h1>
-<p>User类，这里就是普通的一个Bean,用来添加到容器中，观察其生命周期</p>
-<pre><code>package com.itbofeng.bean;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-public class User implements InitializingBean , DisposableBean {
-    private String name;
-    public User() {
-        System.out.println(&quot;调用Bean的函数(constructor)&quot;);
-    }
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        System.out.println(&quot;调用Bean的函数(setName/setAttribute)&quot;);
-        this.name = name;
-    }
-    @PostConstruct
-    public void postConstruct(){
-        System.out.println(&quot;调用Bean的函数(postConstruct)&quot;);
-    }
-    //MainConfig中@Bean 的initMethod
-    public void initMethod(){
-        System.out.println(&quot;调用Bean的函数(initMethod)&quot;);
-    }
-    //InitializingBean接口的方法afterPropertiesSet
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        System.out.println(&quot;调用Bean的函数(afterPropertiesSet)&quot;);
-    }
-    @PreDestroy
-    public void preDestroy(){
-        System.out.println(&quot;调用Bean的函数(preDestroy)&quot;);
-    }
-    //DisposableBean接口的方法destroy
-    @Override
-    public void destroy() throws Exception {
-        System.out.println(&quot;调用Bean的函数(destroy)&quot;);
-    }
-    //MainConfig中@Bean 的destroyMethod
-    public void destroyMethod(){
-        System.out.println(&quot;调用Bean的函数(destroyMethod)&quot;);
-    }
-}
-</code></pre>
-<p>CustomBeanPostProcessor类，用来观察BeanPostProcessor的运行时期</p>
-<pre><code>package com.itbofeng.bean;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Component;
-@Component
-public class CustomBeanPostProcessor implements BeanPostProcessor {
-    @Nullable
-    @Override
-    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        if(bean.getClass()==User.class){
-            System.out.println(&quot;调用postProcessBeforeInitialization...&quot;);
-        }
-        return bean;
-    }
-    @Nullable
-    @Override
-    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        if(bean.getClass()==User.class){
-            System.out.println(&quot;调用postProcessAfterInitialization...&quot;);
-        }
-        return bean;
-    }
-}
-</code></pre>
-<p>MainConfig类，SpringBoot程序运行的主类，并将User和CustomBeanPostProcessor 加入到容器中</p>
-<pre><code>package com.itbofeng;
-import com.itbofeng.bean.User;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-@SpringBootApplication
-public class MainConfig {
-    public static void main(String[] args) {
-        SpringApplication.run(MainConfig.class,args);
-    }
-    @Bean(initMethod = &quot;initMethod&quot;,destroyMethod = &quot;destroyMethod&quot;)
-    public User user(){
-        return new User();
-    }
-}
-</code></pre>
-<p>运行结果查看<br>
-<img src="https://upload-images.jianshu.io/upload_images/8069900-af8e044c834478ef.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="运行结果.png"></p>
-<h1 id="源码解析">源码解析</h1>
-<p>初始化过程<br>
-首先我们将断点打到CustomBeanPostProcessor.postProcessBeforeInitialization的第一行代码，然后我看一下其方法调用栈：<br>
-![方法调用栈.png]<img src="https://bofengsun.github.io//post-images/1577242577818.png" alt=""><br>
-主要包括两个地方，一个是容器刷新，第二个是初始化Bean，我们先对这容器刷新的源码进行简单查看</p>
-<pre><code>public void refresh() throws BeansException, IllegalStateException {
-		synchronized (this.startupShutdownMonitor) {
-			// Prepare this context for refreshing.
-			prepareRefresh();
-
-			// Tell the subclass to refresh the internal bean factory.
-			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
-
-			// Prepare the bean factory for use in this context.
-			prepareBeanFactory(beanFactory);
-
-			try {
-				// Allows post-processing of the bean factory in context subclasses.
-				postProcessBeanFactory(beanFactory);
-
-				// Invoke factory processors registered as beans in the context.
-				invokeBeanFactoryPostProcessors(beanFactory);
-
-				// Register bean processors that intercept bean creation.
-				registerBeanPostProcessors(beanFactory);
-
-				// Initialize message source for this context.
-				initMessageSource();
-
-				// Initialize event multicaster for this context.
-				initApplicationEventMulticaster();
-
-				// Initialize other special beans in specific context subclasses.
-				onRefresh();
-
-				// Check for listener beans and register them.
-				registerListeners();
-
-				// Instantiate all remaining (non-lazy-init) singletons.
-				finishBeanFactoryInitialization(beanFactory);
-
-				// Last step: publish corresponding event.
-				finishRefresh();
-			}
-
-			catch (BeansException ex) {
-				if (logger.isWarnEnabled()) {
-					logger.warn(&quot;Exception encountered during context initialization - &quot; +
-							&quot;cancelling refresh attempt: &quot; + ex);
-				}
-
-				// Destroy already created singletons to avoid dangling resources.
-				destroyBeans();
-
-				// Reset 'active' flag.
-				cancelRefresh(ex);
-
-				// Propagate exception to caller.
-				throw ex;
-			}
-
-			finally {
-				// Reset common introspection caches in Spring's core, since we
-				// might not ever need metadata for singleton beans anymore...
-				resetCommonCaches();
-			}
-		}
-	}
-</code></pre>
-<p>注意<strong>finishBeanFactoryInitialization</strong>，上面说明也解释说该方法的作用是初始化所有剩下的非懒加载的单例Bean,从该描述也可以知道，懒加载和原型的Bean在该阶段并不会被加载，这部分代码是Spring容器刷新时的代码，也是Spring IOC比较核心的代码，在学习后面中，慢慢将该部分的代码慢慢学习，接下来我们看一下初始化Bean部分的代码：</p>
-<pre><code>protected Object initializeBean(final String beanName, final Object bean, @Nullable RootBeanDefinition mbd) {
-	//对实现了Aware接口的方法进行执行，方法就在下方，使用方法直接实现对应的Aware接口即可
-	if (System.getSecurityManager() != null) {
-		AccessController.doPrivileged((PrivilegedAction&lt;Object&gt;) () -&gt; {
-			invokeAwareMethods(beanName, bean);
-			return null;
-		}, getAccessControlContext());
-	}
-	else {
-		invokeAwareMethods(beanName, bean);
-	}
-
-	Object wrappedBean = bean;
-	if (mbd == null || !mbd.isSynthetic()) {
-		//执行实现了BeanPostProcessor的postProcessBeforeInitialization方法
-		wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
-	}
-
-	try {
-		//执行初始化方法
-		invokeInitMethods(beanName, wrappedBean, mbd);
-	}
-	catch (Throwable ex) {
-		throw new BeanCreationException(
-				(mbd != null ? mbd.getResourceDescription() : null),
-				beanName, &quot;Invocation of init method failed&quot;, ex);
-	}
-	if (mbd == null || !mbd.isSynthetic()) {
-		//执行实现了BeanPostProcessor的postProcessAfterInitialization方法
-		wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
-	}
-
-	return wrappedBean;
-}
-
-private void invokeAwareMethods(final String beanName, final Object bean) {
-	if (bean instanceof Aware) {
-		if (bean instanceof BeanNameAware) {
-			((BeanNameAware) bean).setBeanName(beanName);
-		}
-		if (bean instanceof BeanClassLoaderAware) {
-			ClassLoader bcl = getBeanClassLoader();
-			if (bcl != null) {
-				((BeanClassLoaderAware) bean).setBeanClassLoader(bcl);
-			}
-		}
-		if (bean instanceof BeanFactoryAware) {
-			((BeanFactoryAware) bean).setBeanFactory(AbstractAutowireCapableBeanFactory.this);
-		}
-	}
-}
-
-protected void invokeInitMethods(String beanName, final Object bean, @Nullable RootBeanDefinition mbd)
-			throws Throwable {
-
-	boolean isInitializingBean = (bean instanceof InitializingBean);
-	if (isInitializingBean &amp;&amp; (mbd == null || !mbd.isExternallyManagedInitMethod(&quot;afterPropertiesSet&quot;))) {
-		if (logger.isDebugEnabled()) {
-			logger.debug(&quot;Invoking afterPropertiesSet() on bean with name '&quot; + beanName + &quot;'&quot;);
-		}
-		//调用InitializingBean的afterPropertiesSet方法
-		if (System.getSecurityManager() != null) {
-			try {
-				AccessController.doPrivileged((PrivilegedExceptionAction&lt;Object&gt;) () -&gt; {
-					((InitializingBean) bean).afterPropertiesSet();
-					return null;
-				}, getAccessControlContext());
-			}
-			catch (PrivilegedActionException pae) {
-				throw pae.getException();
-			}
-		}
-		else {
-			((InitializingBean) bean).afterPropertiesSet();
-		}
-	}
-	//调用@Bean制定的的initMethod方法
-	if (mbd != null &amp;&amp; bean.getClass() != NullBean.class) {
-		String initMethodName = mbd.getInitMethodName();
-		if (StringUtils.hasLength(initMethodName) &amp;&amp;
-				!(isInitializingBean &amp;&amp; &quot;afterPropertiesSet&quot;.equals(initMethodName)) &amp;&amp;
-				!mbd.isExternallyManagedInitMethod(initMethodName)) {
-			invokeCustomInitMethod(beanName, bean, mbd);
-		}
-	}
-}
-</code></pre>
-<p>以上就是初始化阶段，我们会发现初始化过程中没有@PostConstruct注解标注的方法，那是因为对@PostConstruct的处理也是BeanPostProcessor的实现类<strong>InitDestroyAnnotationBeanPostProcessor</strong>，那么我们就应该有疑问为什么InitDestroyAnnotationBeanPostProcessor.postProcessBeforeDestruction为什么会在CustomBeanPostProcessor.postProcessBeforeInitialization之后进行，是因为如果不指定顺序默认我们的getOrder为0，而InitDestroyAnnotationBeanPostProcessor的getOrder为Ordered.LOWEST_PRECEDENCE=2147483647,getOrder越大则，优先级越低，所以我们自定义的在其之前，至此初始化部分结束。<br>
-下面我们简单看一下销毁阶段：</p>
-<pre><code>public void destroy() {
-	//处理@PreDestroy注解注释的方法
-	if (!CollectionUtils.isEmpty(this.beanPostProcessors)) {
-		for (DestructionAwareBeanPostProcessor processor : this.beanPostProcessors) {
-			processor.postProcessBeforeDestruction(this.bean, this.beanName);
-		}
-	}
-	//处理实现了DisposableBean接口的destroy的方法
-	if (this.invokeDisposableBean) {
-		if (logger.isDebugEnabled()) {
-			logger.debug(&quot;Invoking destroy() on bean with name '&quot; + this.beanName + &quot;'&quot;);
-		}
-		try {
-			if (System.getSecurityManager() != null) {
-				AccessController.doPrivileged((PrivilegedExceptionAction&lt;Object&gt;) () -&gt; {
-					((DisposableBean) bean).destroy();
-					return null;
-				}, acc);
-			}
-			else {
-				((DisposableBean) bean).destroy();
-			}
-		}
-		catch (Throwable ex) {
-			String msg = &quot;Invocation of destroy method failed on bean with name '&quot; + this.beanName + &quot;'&quot;;
-			if (logger.isDebugEnabled()) {
-				logger.warn(msg, ex);
-			}
-			else {
-				logger.warn(msg + &quot;: &quot; + ex);
-			}
-		}
-	}
-	//处理@Bean指定的destroyMethod方法
-	if (this.destroyMethod != null) {
-		invokeCustomDestroyMethod(this.destroyMethod);
-	}
-	else if (this.destroyMethodName != null) {
-		Method methodToCall = determineDestroyMethod(this.destroyMethodName);
-		if (methodToCall != null) {
-			invokeCustomDestroyMethod(methodToCall);
-		}
-	}
-}
-</code></pre>
-<h1 id="结束语">结束语</h1>
-<p>至此，我们Bean的生命周期探索初步结束，后面再做进一步深入学习，在学习本节课时要多进行调试，断点跟踪，会更加有效果。另外无论是在初始化还是在结束时都是处理的单例的Bean,而且在初始化时，处理的Bean还是非懒加载的，所以需要特殊说明：<strong>非懒加载的单实例Bean的生命周期如上;懒加载的单实例Bean是在第一次获取进行初始化过程;原型Bean是在每次获取时都进行初始化，而且Spring容器不会管理器销毁。</strong><br>
-最近在网上看到了一篇文章，很不错，详细的介绍了Spring IOC的原理，如果大家想详细了解Spring的IOC可以看一下：https://www.cnblogs.com/ITtangtang/p/3978349.html，好东西大家一起分享，🌹🍀🍎💰📱🌙🍁🍂🍃🌷💎🔫🏀⚽⚡👄🔥</p>
-]]></content>
-    </entry>
-    <entry>
         <title type="html"><![CDATA[相思相守]]></title>
         <id>https://bofengsun.github.io//post/xiang-si-xiang-shou</id>
         <link href="https://bofengsun.github.io//post/xiang-si-xiang-shou">
         </link>
-        <updated>2019-12-16T05:51:45.000Z</updated>
+        <updated>2019-12-01T05:51:45.000Z</updated>
         <summary type="html"><![CDATA[<p>长相思，长相思。若问相思甚了期，除非相见时。<br>
 怕相思，已相思，轮到相思无处辞，眉间露一丝。</p>
 <p>长相守，长相守，执子相守寄无期，但凭风雨处。<br>
@@ -415,7 +594,7 @@ protected void invokeInitMethods(String beanName, final Object bean, @Nullable R
         <id>https://bofengsun.github.io//post/shiro-mi-ma-jia-mi</id>
         <link href="https://bofengsun.github.io//post/shiro-mi-ma-jia-mi">
         </link>
-        <updated>2019-11-14T15:54:05.000Z</updated>
+        <updated>2019-11-24T15:54:05.000Z</updated>
         <summary type="html"><![CDATA[<p>密码加密主要是在用户登录与注册的时候进行的，用户在注册时生成密码，通过加密存储密文到数据库中，用户在登录时候，将前台用户填写的密码再次进行加密与数据库中的密码进行比对，一致即可通过；会话管理主要时类似Session、Token的生命周期，下面我们来简单认识一下Shiro的密码加密和会话管理。</p>
 ]]></summary>
         <content type="html"><![CDATA[<p>密码加密主要是在用户登录与注册的时候进行的，用户在注册时生成密码，通过加密存储密文到数据库中，用户在登录时候，将前台用户填写的密码再次进行加密与数据库中的密码进行比对，一致即可通过；会话管理主要时类似Session、Token的生命周期，下面我们来简单认识一下Shiro的密码加密和会话管理。</p>
@@ -571,7 +750,7 @@ public class CustomSessionListener implements SessionListener {
         <id>https://bofengsun.github.io//post/shiro-quan-xian-ren-zheng</id>
         <link href="https://bofengsun.github.io//post/shiro-quan-xian-ren-zheng">
         </link>
-        <updated>2019-11-13T04:39:28.000Z</updated>
+        <updated>2019-11-20T04:39:28.000Z</updated>
         <summary type="html"><![CDATA[<p>前面几篇文章中我们提到Shiro的几个主要功能中，其中还包括了权限认证，那么这一节 我们就简单体验一下Shiro的权限认证吧。</p>
 ]]></summary>
         <content type="html"><![CDATA[<p>前面几篇文章中我们提到Shiro的几个主要功能中，其中还包括了权限认证，那么这一节 我们就简单体验一下Shiro的权限认证吧。</p>
@@ -659,7 +838,7 @@ public class CustomSessionListener implements SessionListener {
         <id>https://bofengsun.github.io//post/jmeter-ti-yan-zhi-lu</id>
         <link href="https://bofengsun.github.io//post/jmeter-ti-yan-zhi-lu">
         </link>
-        <updated>2019-11-12T11:23:40.000Z</updated>
+        <updated>2019-11-17T11:23:40.000Z</updated>
         <summary type="html"><![CDATA[<p>Jmeter 是一款测试工具，主要用来进行压力测试，今天和测试的同事在聊这个话题，顺便就体验了一下Jmeter进行压力测试，下面我就简单描述一下今天的体验吧。</p>
 ]]></summary>
         <content type="html"><![CDATA[<p>Jmeter 是一款测试工具，主要用来进行压力测试，今天和测试的同事在聊这个话题，顺便就体验了一下Jmeter进行压力测试，下面我就简单描述一下今天的体验吧。</p>
@@ -706,7 +885,7 @@ Ramp-Up时间：多少秒内启动这些线程，也就是说会在这个时间�
         <id>https://bofengsun.github.io//post/shiro-authentication-2</id>
         <link href="https://bofengsun.github.io//post/shiro-authentication-2">
         </link>
-        <updated>2019-11-11T05:25:45.000Z</updated>
+        <updated>2019-11-13T05:25:45.000Z</updated>
         <summary type="html"><![CDATA[<p>上一节我们简单介绍了一下Shiro的身份认证，但其中有些细节之处我们没用讨论到，那么这一节中，我们就一些问题进行一下思考讨论。</p>
 ]]></summary>
         <content type="html"><![CDATA[<p>上一节我们简单介绍了一下Shiro的身份认证，但其中有些细节之处我们没用讨论到，那么这一节中，我们就一些问题进行一下思考讨论。</p>
@@ -1254,110 +1433,6 @@ public class CustomRealm extends AuthenticatingRealm {
             log.info(&quot;认证成功！&quot;);
             return simpleAuthenticationInfo;
         }
-    }
-}
-</code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Shiro 初体验]]></title>
-        <id>https://bofengsun.github.io//post/shiro-01</id>
-        <link href="https://bofengsun.github.io//post/shiro-01">
-        </link>
-        <updated>2019-11-08T09:39:44.000Z</updated>
-        <summary type="html"><![CDATA[<p>Shiro 是一个Java安全框架，主要是进行身份认证，权限认证，密码加密，会话管理的一套框架，下面让我们一起来认识一下Shiro吧!</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>Shiro 是一个Java安全框架，主要是进行身份认证，权限认证，密码加密，会话管理的一套框架，下面让我们一起来认识一下Shiro吧!</p>
-<!-- more -->
-<h2 id="1-认识shiro的功能">1、认识Shiro的功能</h2>
-<p>看图说话，下图中是Shiro官网给出的描述，很明显主要包括四点：</p>
-<ul>
-<li>Authentication(身份认证)</li>
-<li>Authorization(权限认证)</li>
-<li>Session Management(会话管理)</li>
-<li>Cryptography(密码学)<br>
-<img src="https://bofengsun.github.io//post-images/1573123546063.png" alt="Shiro功能"></li>
-</ul>
-<h2 id="2-关键概念认识">2、关键概念认识</h2>
-<ul>
-<li>Subject (org.apache.shiro.subject.Subject) 主体<br>
-指正在访问的主体，通常指当前用户，亦可指爬虫、定时任务等。</li>
-<li>SecurityManager (org.apache.shiro.mgt.SecurityManager) 安全管理器<br>
-安全管理器，是Shiro的核心，管理着所有的Subject，负责与Shiro的其他组件进行交互，类似与SpringMvc 中的DispatcherServlet。</li>
-<li>Realms 安全数据<br>
-主要是储存Shiro的安全数据（用户、角色、权限等），SecurityManager验证用户是否登陆、是否拥有权限等需要从其中获取数据。<br>
-<img src="https://bofengsun.github.io//post-images/1573126718187.png" alt=""></li>
-</ul>
-<h2 id="3-初体验">3、初体验</h2>
-<pre><code class="language-Java">//git clone https://github.com/apache/shiro.git 下载Shiro源码包括该代码。
-
-public class Quickstart {
-
-    private static final transient Logger log = LoggerFactory.getLogger(Quickstart.class);
-
-
-    public static void main(String[] args) {
-
-        //用来从配置文件初始化Shiro环境，一般不会用
-        Factory&lt;SecurityManager&gt; factory = new IniSecurityManagerFactory(&quot;classpath:shiro.ini&quot;);
-        SecurityManager securityManager = factory.getInstance();
-        SecurityUtils.setSecurityManager(securityManager);
-        //获取当前用户,从这以后的代码都比较重要
-        Subject currentUser = SecurityUtils.getSubject();
-        //获取Session
-        Session session = currentUser.getSession();
-        session.setAttribute(&quot;someKey&quot;, &quot;aValue&quot;);
-        String value = (String) session.getAttribute(&quot;someKey&quot;);
-        if (value.equals(&quot;aValue&quot;)) {
-            log.info(&quot;Retrieved the correct value! [&quot; + value + &quot;]&quot;);
-        }
-
-        // 判断用户是否经过身份认证，如果没用则进行身份认证
-        if (!currentUser.isAuthenticated()) {
-            //通过用户名密码进行登陆
-            UsernamePasswordToken token = new UsernamePasswordToken(&quot;lonestarr&quot;, &quot;vespa&quot;);   //设置记住我
-            token.setRememberMe(true);
-            try {
-                //进行登陆
-                currentUser.login(token);
-            } catch (UnknownAccountException uae) {//用户不存在异常
-                log.info(&quot;There is no user with username of &quot; + token.getPrincipal());
-            } catch (IncorrectCredentialsException ice) {//密码不正确异常
-                log.info(&quot;Password for account &quot; + token.getPrincipal() + &quot; was incorrect!&quot;);
-            } catch (LockedAccountException lae) {//用户被锁定异常
-                log.info(&quot;The account for username &quot; + token.getPrincipal() + &quot; is locked.  &quot; +
-                        &quot;Please contact your administrator to unlock it.&quot;);
-            }
-            // ... catch more exceptions here (maybe custom ones specific to your application?
-            catch (AuthenticationException ae) {//认证异常，查看其子类发现Shiro提供的认证异常
-                //unexpected condition?  error?
-            }
-        }
-
-        log.info(&quot;User [&quot; + currentUser.getPrincipal() + &quot;] logged in successfully.&quot;);
-
-        // 判断用户是否拥有角色
-        if (currentUser.hasRole(&quot;schwartz&quot;)) {
-            log.info(&quot;May the Schwartz be with you!&quot;);
-        } else {
-            log.info(&quot;Hello, mere mortal.&quot;);
-        }
-
-        //判断用户是否拥有权限
-        //判断用户是否拥有winnebago:drive:eagle5权限
-        //winnebago 类型，driver 行为，eagle5对象
-        //如 当前用户拥有对张三（对象）这个用户（类型）的删除行为
-        if (currentUser.isPermitted(&quot;winnebago:drive:eagle5&quot;)) {
-            log.info(&quot;You are permitted to 'drive' the winnebago with license plate (id) 'eagle5'.  &quot; +
-                    &quot;Here are the keys - have fun!&quot;);
-        } else {
-            log.info(&quot;Sorry, you aren't allowed to drive the 'eagle5' winnebago!&quot;);
-        }
-
-        //用户退出登陆
-        currentUser.logout();
-
-        System.exit(0);
     }
 }
 </code></pre>

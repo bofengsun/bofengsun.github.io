@@ -3,7 +3,7 @@
         <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1,initial-scale=1,user-scalable=no" />
         <meta charset="utf-8">
         <meta name="referrer" content="never">
-        <title>Shiro 权限认证 | 玩命有人疼</title>
+        <title>SpringBoot 添加Bean | 玩命有人疼</title>
         <link rel="stylesheet" href="https://cdn.staticfile.org/KaTeX/0.11.1/katex.min.css">
         <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
         <link rel="stylesheet" href="https://bofengsun.github.io//styles/main.css">
@@ -25,7 +25,7 @@
 
     </head>
     <body class="mdui-theme-primary-purple mdui-theme-accent-purple">
-        <header class="index-img mdui-m-b-3"  style="background-image: url(https://bofengsun.github.io//post-images/shiro-quan-xian-ren-zheng.png);" >
+        <header class="index-img mdui-m-b-3"  style="background-image: url(https://bofengsun.github.io//post-images/springboot-tian-jia-bean.png);" >
                           <button class="mdui-btn  mdui-btn-icon mdui-btn-dense mdui-color-theme-500 mdui-ripple yinying mdui-m-t-1 mdui-m-l-1" mdui-menu="{target: '#demo-attr-cascade'}"><i class="mdui-icon material-icons">&#xe5d2;</i></button>
                 <ul class="mdui-menu" id="demo-attr-cascade">
                 
@@ -52,91 +52,84 @@
                 <div class="mdui-row">
                         <div class="mdui-col-md-8 mdui-col-offset-md-2 ">
                          <article class="mdui-shadow-10 mdui-p-a-2 post-list">
-                           <div class="mdui-typo-display-1 mdui-m-b-3">Shiro 权限认证</div>
-                           <a  class="index-list-biaoqian ">2019-11-20</a>
-                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>前面几篇文章中我们提到Shiro的几个主要功能中，其中还包括了权限认证，那么这一节 我们就简单体验一下Shiro的权限认证吧。</p>
+                           <div class="mdui-typo-display-1 mdui-m-b-3">SpringBoot 添加Bean</div>
+                           <a  class="index-list-biaoqian ">2019-11-01</a>
+                           <div class="mdui-typo mdui-m-t-3 post-neirong"><p>Spring容器中添加Bean的几种方式:@Bean、包扫描+@Component与其延伸注解、@ComponentScan、ImportSelector、ImportBeanDefinitionRegistrar、实现FactoryBean。</p>
 <!-- more -->
-<h2 id="1-实现权限认证逻辑">1、实现权限认证逻辑</h2>
-<p>基于前面的文章，自定义Realm继承AuthorizingRealm 需要实现doGetAuthenticationInfo 和 doGetAuthorizationInfo,其中doGetAuthenticationInfo主要用来身份认证，doGetAuthorizationInfo主要用来进行权限认证，具体代码如下：<br>
-前置代码：</p>
-<pre><code class="language-Java">    private static final Map&lt;String,Set&lt;String&gt;&gt; USER_ROLE= new HashMap&lt;&gt;();
-    static {
-        USER_ROLE.put(&quot;1&quot;,new HashSet&lt;&gt;(Arrays.asList(&quot;item:add&quot;,&quot;item:search&quot;,&quot;item:update&quot;,&quot;item:delete&quot;)));
-        USER_ROLE.put(&quot;2&quot;,new HashSet&lt;&gt;(Arrays.asList(&quot;item:add&quot;,&quot;item:search&quot;)));
+<p>#@Bean</p>
+<pre><code>    @Bean
+    public User user(){
+        return new User();
     }
+</code></pre>
+<p>通过**@Bean**注解可往容器中添加Bean组件，默认方法名为bean的Id,如果要特殊指定其名称，可以使用@Bean(&quot;user&quot;)，详细参考上一节<br>
+#包扫描+@Component与其延伸注解<br>
+其实在项目中多用包扫描的方式，向容器中添加组件，可以在主配置类上，@Configuration和@ComponentScan，@ComponentScan默认扫描当前类所在的包，所以在Spring Boot程序中，一般主程序类会建立在项目的根包中，然后利用@SpringBootApplication标注，@SpringBootApplication是一个组合注解包括@SpringBootConfiguration@EnableAutoConfiguration、@ComponentScan三个注解，其中就包含@ComponentScan注解，@ComponentScan还有其他属性，详细查看上一小节。</p>
+<p><strong>@Conditional</strong><br>
+@Conditional注解是根据条件往容器中注册Bean,它可以注册在方法和类上，在SpringBoot自动配置中，广泛利用@Conditional注解和它的延伸注解，往Spring容器中进行动态注册。<strong>@ConditionalOnClass</strong>如果有这个类才注册，<strong>@ConditionalOnMissingBean</strong>如果没有这个Bean组件才注册等等。<br>
+#@Import<br>
+####1) @Import<br>
+在容器中导入组件还可以通过@Import导入组建，例如：</p>
+<pre><code>@Configuration
+@ComponentScan
+@Import(User.class)
+public class MainConfig {
 
+}
+</code></pre>
+<p>如果使用@Import导入组件，导入的组件ID为其全类名。<br>
+####2) ImportSelector<br>
+@Import组件的value如果是实现了<strong>ImportSelector</strong>接口，可以通过该类批量导入组件，该类的<strong>selectImports</strong>方法的返回值，将会被注册到Spring容器中，但该类本身并不会被导入到组件中。<br>
+####3) ImportBeanDefinitionRegistrar<br>
+通过实现该类往容器中注册一个Bean,例如</p>
+<pre><code>public class CustomImportBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar{
     @Override
-    public Set&lt;String&gt; getUserRoles(String userId) {
-        Set&lt;String&gt; result = USER_ROLE.get(userId);
-        return result!=null?result:Collections.EMPTY_SET;
-    }
-</code></pre>
-<pre><code class="language-Java">    @Override
-    protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
-        log.info(&quot;开始进行权限认证！&quot;);
-        SimpleAuthorizationInfo simpleAuthorizationInfo=new SimpleAuthorizationInfo();
-        String userId = (String)principalCollection.getPrimaryPrincipal();
-        Set&lt;String&gt; userRoles = roleService.getUserRoles(userId);
-        for (String userRole:userRoles){
-            simpleAuthorizationInfo.addStringPermission(userRole);
+    public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry beanDefinitionRegistry) {
+        boolean b1 = beanDefinitionRegistry.containsBeanDefinition(&quot;mother&quot;);
+        boolean b2 = beanDefinitionRegistry.containsBeanDefinition(&quot;father&quot;);
+        if(b1&amp;&amp;b2){
+            //获取bean的定义信息
+            RootBeanDefinition beanDefinition = new RootBeanDefinition(Child.class);
+            beanDefinitionRegistry.registerBeanDefinition(&quot;child&quot;,beanDefinition);
         }
-        return simpleAuthorizationInfo;
     }
+}
 </code></pre>
-<h2 id="2-配置lifecyclebeanpostprocessor-defaultadvisorautoproxycreator-authorizationattributesourceadvisor">2、配置LifecycleBeanPostProcessor、DefaultAdvisorAutoProxyCreator、AuthorizationAttributeSourceAdvisor</h2>
-<p>因为Shiro需要对Controller进行代理，所以需要开启Controller的代理，需要配置LifecycleBeanPostProcessor、DefaultAdvisorAutoProxyCreator、AuthorizationAttributeSourceAdvisor</p>
-<pre><code class="language-Java">    @Bean
-    public LifecycleBeanPostProcessor lifecycleBeanPostProcessor(){
-        return new LifecycleBeanPostProcessor();
+<p>#实现FactoryBean</p>
+<pre><code>public class UserFactoryBean implements FactoryBean&lt;User&gt;{
+    //通过getObject()方法创建对象，如果是非单例，则在每次获取时执行该方法
+    @Nullable
+    @Override
+    public User getObject() throws Exception {
+        return new User();
     }
-    @Bean
-    public DefaultAdvisorAutoProxyCreator defaultAdvisorAutoProxyCreator(){
-        DefaultAdvisorAutoProxyCreator creator=new DefaultAdvisorAutoProxyCreator();
-        creator.setProxyTargetClass(true);
-        return creator;
+    //类型
+    @Nullable
+    @Override
+    public Class&lt;?&gt; getObjectType() {
+        return User.class;
     }
-    @Bean
-    public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(SecurityManager securityManager) {
-        AuthorizationAttributeSourceAdvisor advisor=new AuthorizationAttributeSourceAdvisor();
-        advisor.setSecurityManager(securityManager);
-        return advisor;
+    //是否单例
+    @Override
+    public boolean isSingleton() {
+        return true;
     }
+}
 </code></pre>
-<h2 id="3-配置请求权限码">3、配置请求权限码</h2>
-<p>通过注解配置权限信息，@RequiresRoles、@RequiresPermissions 以@RequiresPermissions为例：</p>
-<pre><code class="language-Java">    @RequiresPermissions(&quot;item:search&quot;)
-    @GetMapping(&quot;/search&quot;)
-    public ResultVo&lt;String&gt; search(){
-        return ResultVo.success(&quot;search&quot;);
-    }
-    @RequiresPermissions(&quot;item:add&quot;)
-    @GetMapping(&quot;/add&quot;)
-    public ResultVo&lt;String&gt; add(){
-        return ResultVo.success(&quot;add&quot;);
-    }
-    @RequiresPermissions(&quot;item:update&quot;)
-    @GetMapping(&quot;/update&quot;)
-    public ResultVo&lt;String&gt; update(){
-        return ResultVo.success(&quot;update&quot;);
-    }
-    @RequiresPermissions(&quot;item:delete&quot;)
-    @GetMapping(&quot;/delete&quot;)
-    public ResultVo&lt;String&gt; delete(){
-        return ResultVo.success(&quot;delete&quot;);
-    }
-</code></pre>
-<h2 id="4-演示效果">4、演示效果</h2>
-<p>用户登陆：<br>
-<img src="https://bofengsun.github.io//post-images/1573745823357.png" alt="登陆用户"><br>
-有权限：<br>
-<img src="https://bofengsun.github.io//post-images/1573745976892.png" alt="有权限"><br>
-无权限：<br>
-<img src="https://bofengsun.github.io//post-images/1573746081151.png" alt="无权限"></p>
+<p>该方式默认获取到的工厂Bean调用getObject创建的对象；<br>
+如果获取工厂Bean本身需要在ID前加&amp;标识，例如&amp;userFactoryBean 。</p>
+<p>#小结：<br>
+本节课主要学习了如何往Spring容器中注册Bean的4中方式，<br>
+1、通过@Bean<br>
+2、通过包扫描+@Component及其延伸组建<br>
+3、通过@Import(ImportSelector、ImportBeanDefinitionRegistrar)<br>
+4、通过实现工厂Bean(FactoryBean)<br>
+下节课我们学习Bean的生命周期相关的内容。</p>
 </div>
                               <div class="mdui-divider mdui-m-t-3"></div>
                               <div class="mdui-row-xs-2 mdui-m-t-2">
-  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://bofengsun.github.io//post/shiro-mi-ma-jia-mi">Shiro 密码加密与会话管理介绍</a></div></div>
- <div class="mdui-col"><div class="mdui-text-right "><a href="https://bofengsun.github.io//post/jmeter-ti-yan-zhi-lu">Jmeter 体验之旅</a></div> </div>
+  <div class="mdui-col"> <div class="mdui-text-left"><a href="https://bofengsun.github.io//post/spring-bean-sheng-ming-zhou-qi">Spring Bean生命周期</a></div></div>
+ <div class="mdui-col"></div>
                                 </div>
                                 <div class="mdui-divider mdui-m-t-2"></div>
    
@@ -193,17 +186,7 @@
 </script>
                          </article>
                  <!-- <div class="toc-container mdui-float-right">
-                <ul class="markdownIt-TOC">
-<li>
-<ul>
-<li><a href="#1-%E5%AE%9E%E7%8E%B0%E6%9D%83%E9%99%90%E8%AE%A4%E8%AF%81%E9%80%BB%E8%BE%91">1、实现权限认证逻辑</a></li>
-<li><a href="#2-%E9%85%8D%E7%BD%AElifecyclebeanpostprocessor-defaultadvisorautoproxycreator-authorizationattributesourceadvisor">2、配置LifecycleBeanPostProcessor、DefaultAdvisorAutoProxyCreator、AuthorizationAttributeSourceAdvisor</a></li>
-<li><a href="#3-%E9%85%8D%E7%BD%AE%E8%AF%B7%E6%B1%82%E6%9D%83%E9%99%90%E7%A0%81">3、配置请求权限码</a></li>
-<li><a href="#4-%E6%BC%94%E7%A4%BA%E6%95%88%E6%9E%9C">4、演示效果</a></li>
-</ul>
-</li>
-</ul>
-
+                
               </div> -->
 
                         </div>
